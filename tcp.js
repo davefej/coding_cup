@@ -56,7 +56,7 @@ function createServer(){
                         console.error("Thick Id not equal",dev_server_thick_id,requestData.thick);
                     }
                     socket.write(JSON.stringify({
-                        txt:"Map informations",
+                        txt:"Step informations",
                         thick: ++dev_server_thick_id
                     }));     
                 }

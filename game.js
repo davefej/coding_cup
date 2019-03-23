@@ -9,6 +9,11 @@ module.exports  = {
     },
     setMap(map){
         this.map = map;
+    },
+    firstMessage(){
+        return {
+            token:"1234"
+        };
     }
 };
 let i = 0;
