@@ -36,9 +36,12 @@ module.exports = {
 };
 
 
-
+var gameId = 1;
+var car_id = 1;
 function createServer(){
 /***** LOCAL TCP SERVER JUST FOR TESTING *******/
+    gameId++;
+    car_id++;
     if(IP == '127.0.0.1' && server == undefined){             
         let firstReqest = true;
         server = net.createServer(function(socket) {                           
@@ -52,13 +55,46 @@ function createServer(){
                 }else{
                     if(firstReqest){
                         firstReqest = false;
-                    }else if(requestData.thick != dev_server_thick_id){
+                    }else if(requestData.response_id.tick != dev_server_thick_id){
                         console.error("Thick Id not equal",dev_server_thick_id,requestData.thick);
                     }
                     socket.write(JSON.stringify({
-                        txt:"Step informations",
-                        thick: ++dev_server_thick_id
-                    }));     
+                        "request_id": {
+                          "game_id": gameId,
+                          "tick": ++dev_server_thick_id,
+                          "car_id": car_id
+                        },
+                        "cars": [
+                          {
+                            "id": car_id,
+                            "pos": {"x": 0, "y": 0},
+                            "life": 100,
+                            "speed": 2,
+                            "direction": ">",
+                            "next_command": "+",
+                            "transported": "100",
+                            "passenger_id": "1"
+                          }
+                        ],
+                        "pedestrians": [
+                          {
+                            "id": 100,
+                            "pos": {"x": 10, "y": 10},
+                            "speed": 1,
+                            "direction": ">",
+                            "next_command": "+"
+                          }, 
+                        ],
+                        "passengers": [
+                          {
+                            "id": 101,
+                            "pos": {"x": 30, "y": 30},
+                            "dest_pos": {"x": 40, "y": 40},
+                            "car_id":car_id
+                          }
+                        ],
+                        "messages": []
+                      }));     
                 }
                 socket.pipe(split());
             });
