@@ -122,31 +122,6 @@ function mapSizeChanged(value){
     drawMap();
 }
 
-/*
-for(var col = 0; col < GAME.gameMatrix.length; col++){
-    for(var row = 0; row < GAME.gameMatrix[col].length; row++){
-        if(GAME.gameMatrix[col][row] == ASZFALT && GAME.gameMatrix[col][row+1] == ASZFALT && GAME.gameMatrix[col][row+2] == ASZFALT){
-            GAME.graph.addLink(col+"_"+row,col+"_"+row+1,{weight:1});
-            GAME.graph.addLink(col+"_"+row,col+"_"+row+2,{weight:2});
-            if(GAME.gameMatrix[col][row+3] == ASZFALT){
-                GAME.graph.addLink(col+"_"+row,col+"_"+row+3,{weight:2});
-            }
-        }
-    }
-}
-for(var col = 0; col < GAME.gameMatrix.length; col++){
-    for(var row = 0; row < GAME.gameMatrix[col].length; row++){
-        if(GAME.gameMatrix[col][row] == ASZFALT && GAME.gameMatrix[col][row+1] == ASZFALT && GAME.gameMatrix[col][row+2] == ASZFALT){
-            GAME.graph.addLink(col+"_"+row,col+"_"+row+1,{weight:1});
-            GAME.graph.addLink(col+"_"+row,col+"_"+row+2,{weight:2});
-            if(GAME.gameMatrix[col][row+3] == ASZFALT){
-                GAME.graph.addLink(col+"_"+row,col+"_"+row+3,{weight:2});
-            }
-        }
-    }
-}
-var firstStreetPoint;
-*/
 
 
 function findAllLinearStreets(from, across){

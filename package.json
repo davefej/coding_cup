@@ -1,6 +1,8 @@
 {
     "dependencies": {
         "express": "*",
+        "ngraph.graph": "0.0.18",
+        "ngraph.path": "^1.1.0",
         "split": "*"
     }
 }
