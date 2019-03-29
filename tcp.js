@@ -1,8 +1,11 @@
 const net = require('net');
 var split = require('split');
 var client;
-var IP = '127.0.0.1';
-var PORT = 1337;
+//var IP = '127.0.0.1';
+//var PORT = 1337;
+var IP = '31.46.64.35';
+var PORT = 12323;
+
 var server;
 var dev_server_thick_id;
 
