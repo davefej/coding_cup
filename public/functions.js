@@ -179,6 +179,8 @@ function calcWeight(from,dest,distance){
     }
 }
 
+
+
 const fields = [
     "         ",
     "   XXX   ",
