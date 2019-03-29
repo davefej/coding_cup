@@ -24,9 +24,6 @@ module.exports  = {
             command:command
         };
     },
-    setMap(map){
-        this.map = map;
-    },
     getFirstMessage(){
         return {
             token:"1iVXOVZK7ldH5Kr6qYCEkZE6xpR0SXZJkyfQayrKfJ2e9S8xdeTjsV9oohjePSsUXFOcDnevsu918"
