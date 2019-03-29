@@ -79,7 +79,7 @@ function transformedSeenCoords(dir) {
 module.exports = {
     isSeen(tick){
 
-    }
+    },
     detect: function(tick){
 
     }
