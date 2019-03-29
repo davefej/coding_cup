@@ -13,7 +13,7 @@ const fields = [
     "    X    ",
     "         "];
 
-function getRelativeSeenCoords(fields){
+function relativeCoordsFromFields(){
     carCoords = []
     seenCoords = []
     for (var y=0; y < fields.length; ++y){
@@ -41,9 +41,9 @@ function dot(mat22, vec2){
     return [[mat22[0][0]*vec2[0] + mat22[0][1]*vec2[1]], [mat22[1][0]*vec2[0] + mat22[1][1]*vec2[1]]]
 }
 
-function transFormRelativeSeenCoords(dir) {
+function transformedSeenCoords(dir) {
     
-    originalCoords =  getRelativeSeenCoords(fields);
+    originalCoords =  relativeCoordsFromFields();
     switch(dir){
         case '^': {
             return originalCoords;
@@ -76,7 +76,9 @@ function transFormRelativeSeenCoords(dir) {
 };
 
 module.exports = {
-    isSeen()
+    isSeen(tick){
+
+    }
     detect: function(tick){
 
     }

@@ -164,7 +164,6 @@ function calcWeight(from,dest,distance){
     }
 }
 
-
 for(var i = 0; i < GAME.gameMatrix.length; i++){
     for(var j = 0; j < GAME.gameMatrix[i].length; j++){
         findAllLinearStreets({i:i,j:j});
