@@ -34,13 +34,15 @@ function getRelativeSeenCoords(fields){
     return relativeSeenCoords;
 }
 
+function rmatrix(phi){
+    return [Math.cos(phi), -Math.sin(phi)], [Math.sin(phi), Math.cos(phi)]
+}
+function dot(mat22, vec2){
+    return [[mat22[0][0]*vec2[0] + mat22[0][1]*vec2[1]], [mat22[1][0]*vec2[0] + mat22[1][1]*vec2[1]]]
+}
+
 function transFormRelativeSeenCoords(dir) {
-    function rmatrix(phi){
-        return [Math.cos(phi), -Math.sin(phi)], [Math.sin(phi), Math.cos(phi)]
-    }
-    function dot(mat22, vec2){
-        return [[mat22[0][0]*vec2[0] + mat22[0][1]*vec2[1]], [mat22[1][0]*vec2[0] + mat22[1][1]*vec2[1]]]
-    }
+    
     originalCoords =  getRelativeSeenCoords(fields);
     switch(dir){
         case '^': {
@@ -74,6 +76,7 @@ function transFormRelativeSeenCoords(dir) {
 };
 
 module.exports = {
+    isSeen()
     detect: function(tick){
 
     }
