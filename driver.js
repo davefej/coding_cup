@@ -3,8 +3,8 @@ NO_OP = "NO_OP"; ACCELERATION = "ACCELERATION"; DECELERATION = "DECELERATION";
 CAR_INDEX_LEFT = "CAR_INDEX_LEFT"; CAR_INDEX_RIGHT = "CAR_INDEX_RIGHT"; CLEAR = "CLEAR";
 FULL_THROTTLE = "FULL_THROTTLE";EMERGENCY_BRAKE = "EMERGENCY_BRAKE"; GO_LEFT = "GO_LEFT"; GO_RIGHT = "GO_RIGHT";
 
-const FREE = 1, HASPASSENGER = 2, GOINGFORPASSENGER = 3;
-var routePoints, car, state = FREE, currentPassenger, waze;
+const FREE = 1, HASPASSENGER = 2, GOINGFORPASSENGER = 3, WAITINGIN = 4,WAITINGOUT =5;
+var routePoints, car, state = FREE, currentPassenger, waze,stepLog;
 module.exports = {
     setPathFinder(pathFinder){
         waze = pathFinder;
@@ -12,10 +12,15 @@ module.exports = {
     setRoutePlan(nodeList){
         routePoints = formatNodeList(nodeList);
     },
-    updateCar(thickData){        
+    getRoutePoints(){
+        return routePoints
+    },
+    updateCar(thickData,lastCommand){        
         for(var i = 0; i < thickData.cars.length; i++){
             if(thickData.request_id.car_id == thickData.cars[i].id){
-                car = thickData.cars[i];
+                //console.log("Car before futurecalc",thickData.cars[i],thickData.cars[i].pos)
+                car = futureCarPos(thickData.cars[i],lastCommand);
+                //console.log("Car agter futurecalc",thickData.cars[i],thickData.cars[i].pos)
                 return;
             }
         }        
@@ -32,7 +37,7 @@ module.exports = {
         return state == GOINGFORPASSENGER;
     },
     hasPassenger(){
-        return HASPASSENGER;
+        return state == HASPASSENGER;
     },
     free(){
         return state == FREE;
@@ -42,6 +47,7 @@ module.exports = {
         this.transportPassenger();
     },
     passangerTransported(){
+        console.log("Passanger transported")
         currentPassenger = null;
         state = FREE;
     },
@@ -51,19 +57,40 @@ module.exports = {
         }
         this.setRoutePlan(waze.navigate(car.pos,currentPassenger.dest_pos));
     },
-    calcNextCommand(thick){               
-        return calculateCommand();
-        
+    calcNextCommand(){
+        if(this.isWaiting()){
+            return NO_OP;
+        }          
+        console.log(state);
+        var command = calculateCommand();
+        if(command == DECELERATION){
+            console.log("STATE changed WAITING");
+            if(this.hasPassenger()){
+                state = WAITINGOUT;
+            }else{
+                state = WAITINGIN;
+            }
+        }
+        return command;
+    },
+    isWaiting(){
+        return this.isWaitingOut() || this.isWaitingIn();
+    },
+    isWaitingOut(){
+        return state == WAITINGOUT;
+    },
+    isWaitingIn(){
+        return state == WAITINGIN;
     },
     checkStateChange(){
-        if(this.goingForPassenger() && car.passenger_id){
+        if((this.goingForPassenger() || this.isWaitingIn()) && car.passenger_id){
             if(car.passenger_id == currentPassenger.id){
                 this.passengerPicked();
             }else{
                 throw Error("Wrong passanger picked! "+car.passenger_id+" "+currentPassenger.id);
             }            
         }else{
-            if(this.hasPassenger() && !car.passenger_id){
+            if(this.isWaitingOut() && !car.passenger_id){
                 this.passangerTransported();
             }
         }
@@ -73,15 +100,19 @@ module.exports = {
     },
     carDirection(){
         return car.direction;
+    },
+    commandLog(){
+        return stepLog;
     }
 };
 
 function calculateCommand(){
+
     if(isSamepos(car.pos,routePoints[0])){
-        routePoints.shift();         
+        routePoints.shift();
     }
     toNode = routePoints[0];
-    nextNode = routePoints[1];
+    nextNode = routePoints[1];    
     if(car.speed == 0){
         //firststep at game or stops at passanger
         var direction = calculateDirection(car.pos,toNode);
@@ -92,29 +123,42 @@ function calculateCommand(){
         }        
     }else{
         //HALADUNK 1 vel
+        if(!toNode){                
+            return DECELERATION;                
+        }
         var direction = calculateDirection(car.pos,toNode);
         if(direction == car.direction){
-            // JÓ AZ IRÁNY
             if(calcPointsDistance(car.pos,toNode) == 1){
                 if(nextNode){
+                    stepLog = "Direction egyenéő nextnode";
                     //rotation
-                    return turnCommandFromDirections(calculateDirection(toNode,nextNode));
+                    return turnCommandFromDirections(car.direction,calculateDirection(toNode,nextNode));
                 }else{
-                    //final destination stop
-                    return DECELERATION;
-                }            
+                    return NO_OP;                    
+                }
             }else{
                 //go forward
-                if(car.speed == 0){
-                    return ACCELERATION;
+                if(car.speed == 0){                    
+                    stepLog = "Direction egyenlő gyorsítás";
+                    return ACCELERATION;                    
                 }else{
+                    stepLog = "Direction egyenlő noop";
                     return NO_OP;
                 }                
             }
         }else{
-            throw Error("Nem jó irányba fogunk kanyarodni!");
+            if(toNode){
+                //rotation
+                stepLog = "Direction NEMEGYENLÖ fordulás";
+                return turnCommandFromDirections(car.direction,direction);
+            }else{
+                stepLog = "Direction NEMEGYENLÖ lassítás";
+                //final destination stop
+                return DECELERATION;
+            }   
         }
     }
+    
 }
 
 function isSamepos(pos1,pos2){
@@ -128,7 +172,7 @@ function turnCommandFromDirections(lastDirection,nextDirection){
         return CAR_INDEX_RIGHT;
     }else if(lastDirection == DOWN && nextDirection == LEFT){
         return CAR_INDEX_RIGHT;
-    }else if(lastDirection == DOWN && nextDirection == LEFT){
+    }else if(lastDirection == DOWN && nextDirection == RIGHT){
         return CAR_INDEX_LEFT;
     }else if(lastDirection == LEFT && nextDirection == UP){
         return CAR_INDEX_RIGHT;
@@ -145,6 +189,14 @@ function turnCommandFromDirections(lastDirection,nextDirection){
 }
 
 function calculateDirection(from,to){
+    from = {
+        x:parseInt(from.x),
+        y:parseInt(from.y)
+    };
+    to = {
+        x:parseInt(to.x),
+        y:parseInt(to.y)
+    };
     if(from.x > to.x){
         return LEFT;
     }else if(from.x < to.x){
@@ -174,4 +226,75 @@ function formatNodeList(nodes){
         });
     }
     return ret;
+}
+
+function futureCarPos(car,command){
+    switch(command){
+        case NO_OP:
+            futureNO_OP(car);
+            break;
+        case ACCELERATION:
+            car.speed += 1;
+            break;
+        case DECELERATION:
+            car.speed -= 1;
+            break;
+        case CAR_INDEX_LEFT:
+            futureNO_OP(car);
+            car.direction =  turnDirectionFromCommandAndDirection(car.direction,CAR_INDEX_LEFT);
+            break;
+        case CAR_INDEX_RIGHT:
+            futureNO_OP(car);
+            car.direction =  turnDirectionFromCommandAndDirection(car.direction,CAR_INDEX_RIGHT);
+            break;
+        case CLEAR:            
+            break;
+        case FULL_THROTTLE:
+            break;
+        case EMERGENCY_BRAKE:
+            break;
+        case GO_LEFT:
+            break;
+        case GO_RIGHT:
+            break;
+    }
+    return car;
+}
+
+function futureNO_OP(car){
+    switch(car.direction){
+        case UP:
+            car.pos.y = car.pos.y-1
+            return;
+        case DOWN:
+            car.pos.y = car.pos.y+1
+            return;
+        case LEFT:
+            car.pos.x = car.pos.x-1
+            return;
+        case RIGHT:
+            car.pos.x = car.pos.x+1
+            return;
+    }
+}
+
+
+function turnDirectionFromCommandAndDirection(direction,command){
+    if(direction == UP && command == CAR_INDEX_LEFT){
+        return LEFT;
+    }else if(direction == LEFT && command == CAR_INDEX_LEFT){
+        return DOWN;
+    }else if(direction == DOWN && command == CAR_INDEX_LEFT){
+        return RIGHT;
+    }else if(direction == RIGHT && command == CAR_INDEX_LEFT){
+        return UP;
+    }else if(direction == UP && command == CAR_INDEX_RIGHT){
+        return RIGHT;
+    }else if(direction == LEFT && command == CAR_INDEX_RIGHT){
+        return UP;
+    }else if(direction == DOWN && command == CAR_INDEX_RIGHT){
+        return LEFT;
+    }else if(direction == RIGHT && command == CAR_INDEX_RIGHT){
+        return DOWN;
+    }
 }

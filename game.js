@@ -5,23 +5,25 @@ dispatcher.setPathFinder(waze);
 driver.setPathFinder(waze);
 
 
-
+var aktRoute,lastCommand,log;
 GAME = {};
 module.exports  = {
-    calculateNextStep(thickData){                
-        driver.updateCar(thickData);
-        console.log(driver.carPos(),driver.carDirection());
+    calculateNextStep(thickData){             
+        driver.updateCar(thickData,lastCommand);
+        //console.log(driver.carPos(),driver.carDirection());
         driver.checkStateChange();
         if(driver.free()){
             driver.goForPassenger(dispatcher.nextPassenger(driver.carPos(),thickData.passengers));
         }
-        let command = driver.calcNextCommand(thickData);
-        console.log(command);
+        aktRoute = driver.getRoutePoints();
+        let command = driver.calcNextCommand();
+        log = driver.commandLog();
+        lastCommand = command;
         return {
             "response_id": {
-            "game_id": thickData.request_id.game_id,
-            "tick":thickData.request_id.tick,
-            "car_id": thickData.request_id.car_id
+                "game_id": thickData.request_id.game_id,
+                "tick":thickData.request_id.tick,
+                "car_id": thickData.request_id.car_id
             },
             command:command
         };
@@ -30,7 +32,13 @@ module.exports  = {
         return {
             token:"1iVXOVZK7ldH5Kr6qYCEkZE6xpR0SXZJkyfQayrKfJ2e9S8xdeTjsV9oohjePSsUXFOcDnevsu918"
         };
-    }    
+    },
+    getInfo(){
+        return {
+            route:aktRoute,
+            log:log
+        };
+    }
 };
 
 function initGAME(){

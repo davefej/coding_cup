@@ -22,7 +22,10 @@ function pollThickFromServer(){
         url: 'wait_for_thick',
         type: 'GET',
         success: function(data){
-            console.log(data)
+            console.log("---------LÉPÉS "+data.thick.request_id.tick+" -----------");
+            console.log(data.thick.cars[0]);
+            console.log(data.sent);
+            console.log(data.info);
             repeatAfterDelay();
             drawMap(data.thick);
             window.steps.push(data);
