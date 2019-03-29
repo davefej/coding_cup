@@ -1,8 +1,11 @@
 const net = require('net');
 var split = require('split');
 var client;
-var IP = '127.0.0.1';
-var PORT = 1337;
+//var IP = '127.0.0.1';
+//var PORT = 1337;
+var IP = '31.46.64.35';
+var PORT = 12323;
+
 var server;
 var dev_server_thick_id;
 
@@ -71,7 +74,7 @@ function createServer(){
                             "id": car_id,
                             "pos": {"x": 2, "y": 0},
                             "life": 100,
-                            "speed": 2,
+                            "speed": 0,
                             "direction": ">",
                             "next_command": "+",
                             "transported": "100",
@@ -91,7 +94,7 @@ function createServer(){
                           {
                             "id": 101,
                             "pos": {"x": 28, "y": 30},
-                            "dest_pos": {"x": 40, "y": 40},
+                            "dest_pos": {"x": 58, "y": 2},
                             "car_id":car_id
                           }
                         ],

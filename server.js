@@ -30,18 +30,18 @@ app.get('/wait_for_thick', function(req, res){
 
 onJsonMessage = function(data){
     console.log("THICK ARRIVED:",data);
-    var stepData = game.calculateNextStep(data); 
-    
+    if(PENDING_HTTP_RESP && !PENDING_HTTP_RESP.finished){
+        PENDING_HTTP_RESP.send(data);
+        PENDING_HTTP_RESP.end();
+    }
+
+    var stepData = game.calculateNextStep(data);     
     //timeout, not to kill local TCP socket with infinite running
     setTimeout(function(){
         if(tcp.sendJson(stepData)){
             console.log("STEP COMMAND SENT:",data); 
-        }      
-    },1000);
-    if(PENDING_HTTP_RESP && !PENDING_HTTP_RESP.finished){
-        PENDING_HTTP_RESP.send(data);
-        PENDING_HTTP_RESP.end();
-    }    
+        }
+    },100);    
 }
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))

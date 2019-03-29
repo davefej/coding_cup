@@ -35,7 +35,3 @@ function findClosestPassanger(carPos,passengersList){
     }
     return passenger;
 }
-
-function travellingSalesMan(carPos,passengersList){
-    //TODO    
-}
