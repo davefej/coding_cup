@@ -85,6 +85,10 @@ function drawMap(thickData){
                 }
             }
             GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+            /*if(GAME.graph.getLinks(rowIdx+":"+colIdx)){
+                GAME.canvasContext.fillStyle = "#ff333399";
+                GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+            }*/
         }
     }
     if(thickData){
@@ -125,6 +129,12 @@ function mapSizeChanged(value){
     var canvas = document.getElementById("canvas"); 
     canvas.width = GAME.gameMatrix[0].length*GAME.mapRatio;
     canvas.height = GAME.gameMatrix.length*GAME.mapRatio;
+    canvas.addEventListener("click",function(event){        
+            var rect = canvas.getBoundingClientRect();
+            var x = event.clientX - rect.left;
+            var y = event.clientY - rect.top;
+            alert("x: " + Math.floor(x/GAME.mapRatio) + " y: " + Math.floor(y/GAME.mapRatio));        
+    })
     GAME.canvasContext = canvas.getContext("2d");
     drawMap();
 }
