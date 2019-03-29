@@ -20,8 +20,7 @@ module.exports  = {
     navigate(from,to){
         from = nearestAszfaltIfJarda(from);
         to = nearestAszfaltIfJarda(to);
-        from.x = from.j || from.x;
-        from.y = from.i || from.y;
+        from = normalizePoint(from);
         to.x = to.j || to.x;
         to.y = to.i || to.y;
         return pathFinder.find(from.y+":"+from.x,to.y+":"+to.x);
@@ -29,8 +28,7 @@ module.exports  = {
     calcDistance(from,to){
         from = nearestAszfaltIfJarda(from);
         to = nearestAszfaltIfJarda(to);
-        from.x = from.j || from.x;
-        from.y = from.i || from.y;
+        from = normalizePoint(from);
         to.x = to.j || to.x;
         to.y = to.i || to.y;
         var nodes = pathFinder.find(from.y+":"+from.x,to.y+":"+to.x);
@@ -71,9 +69,8 @@ function findAllLinearStreets(from, across){
 }
 
 function isAszfalt(point){
-    point.i = point.i || point.y;
-    point.j = point.j || point.x;
-    return board.matrix[point.i][point.j] == ASZFALT || board.matrix[point.i][point.j] == ZEBRA
+    point = normalizePoint(point);
+    return board.matrix[point.i][point.j] == ASZFALT || board.matrix[point.i][point.j] == ZEBRA;
 }
 
 function calcWeight(from,dest,distance){
@@ -107,4 +104,14 @@ function nearestAszfaltIfJarda(point){
     }
     throw Error("Nincs Út a utas mellett");
 
+}
+
+function normalizePoint(point){
+    if(typeof point.i == "undefined"){
+        point.i = point.y
+    }
+    if(typeof point.j == "undefined"){
+        point.j = point.y
+    }   
+    return point;
 }
