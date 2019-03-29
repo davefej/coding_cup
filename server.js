@@ -28,7 +28,6 @@ app.get('/wait_for_thick', function(req, res){
 });
 
 onJsonMessage = function(data){
-    console.log("THICK ARRIVED:",data);
     var stepData = game.calculateNextStep(data);     
     if(PENDING_HTTP_RESP && !PENDING_HTTP_RESP.finished){
         PENDING_HTTP_RESP.send({

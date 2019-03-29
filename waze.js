@@ -18,20 +18,27 @@ module.exports  = {
         });
     },
     navigate(from,to){
+        from = normalizePoint(from);
+        to = normalizePoint(to);
         from = nearestAszfaltIfJarda(from);
         to = nearestAszfaltIfJarda(to);
-        from = normalizePoint(from);
-        to.x = to.j || to.x;
-        to.y = to.i || to.y;
-        return pathFinder.find(from.y+":"+from.x,to.y+":"+to.x);
+        try{
+            return pathFinder.find(from.y+":"+from.x,to.y+":"+to.x);
+        }catch(e){
+            throw Error("Nem Útora őtkeresés "+from.x+":"+from.y+" "+to.x+":"+to.y)
+        }
+        
     },
     calcDistance(from,to){
+        from = normalizePoint(from);
+        to = normalizePoint(to);
         from = nearestAszfaltIfJarda(from);
         to = nearestAszfaltIfJarda(to);
-        from = normalizePoint(from);
-        to.x = to.j || to.x;
-        to.y = to.i || to.y;
-        var nodes = pathFinder.find(from.y+":"+from.x,to.y+":"+to.x);
+        try{
+            var nodes = pathFinder.find(from.y+":"+from.x,to.y+":"+to.x);
+        }catch(e){
+            throw Error("Nem Útora őtkeresés "+from.x+":"+from.y+" "+to.x+":"+to.y)
+        }
         var sum = 0;
         for(var i = nodes.length-1; i > 0; i--){
             var akt = nodes[i].id.split(":");
@@ -87,10 +94,7 @@ function nearestAszfaltIfJarda(point){
     if(isAszfalt(point)){
         return point;
     }
-    if(isAszfalt({
-        x:point.x+1,
-        y:point.y
-    })){
+    if(isAszfalt({x:point.x+1,y:point.y})){
         return {x:point.x+1, y:point.y}
     }
     if(isAszfalt({x:point.x-1, y:point.y})){
@@ -103,7 +107,6 @@ function nearestAszfaltIfJarda(point){
         return {x:point.x, y:point.y-1}
     }
     throw Error("Nincs Út a utas mellett");
-
 }
 
 function normalizePoint(point){
@@ -111,7 +114,7 @@ function normalizePoint(point){
         point.i = point.y
     }
     if(typeof point.j == "undefined"){
-        point.j = point.y
+        point.j = point.x
     }   
     return point;
 }

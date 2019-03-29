@@ -8,13 +8,15 @@ driver.setPathFinder(waze);
 
 GAME = {};
 module.exports  = {
-    calculateNextStep(thickData){
+    calculateNextStep(thickData){                
         driver.updateCar(thickData);
+        console.log(driver.carPos(),driver.carDirection());
         driver.checkStateChange();
         if(driver.free()){
             driver.goForPassenger(dispatcher.nextPassenger(driver.carPos(),thickData.passengers));
         }
         let command = driver.calcNextCommand(thickData);
+        console.log(command);
         return {
             "response_id": {
             "game_id": thickData.request_id.game_id,

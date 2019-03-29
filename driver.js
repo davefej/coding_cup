@@ -70,6 +70,9 @@ module.exports = {
     },
     carPos(){
         return car.pos;
+    },
+    carDirection(){
+        return car.direction;
     }
 };
 
