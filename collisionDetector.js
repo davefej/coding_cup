@@ -11,7 +11,8 @@ const fields = [
     "  XXXXX  ",
     "   XXX   ",
     "    X    ",
-    "         "];
+    "         "
+];
 
 function relativeCoordsFromFields(){
     carCoords = []

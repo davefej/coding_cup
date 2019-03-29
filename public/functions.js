@@ -79,6 +79,9 @@ function drawMap(thickData){
     for(var rowIdx = 0; rowIdx < GAME.gameMatrix.length; rowIdx++){
         for(var colIdx = 0; colIdx < GAME.gameMatrix[rowIdx].length; colIdx++){
             GAME.canvasContext.fillStyle = getColorByField(GAME.gameMatrix[rowIdx][colIdx]);
+            if (isSeen({i: rowIdx, j: colIdx}, thickData)) {
+                GAME.canvasContext.fillStyle = "#FF0000";
+            }
             GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
         }
     }
@@ -162,6 +165,97 @@ function calcWeight(from,dest,distance){
     }else{
         return distance;
     }
+}
+
+const fields = [
+    "         ",
+    "   XXX   ",
+    "   XXX   ",
+    "   XXX   ",
+    "   XXXX  ",
+    "  XXXXX  ",
+    " XXXXXXX ",
+    " XXXXXXX ",
+    " XXXCXXX ",
+    "  XXXXX  ",
+    "   XXX   ",
+    "    X    ",
+    "         "
+];
+
+function relativeCoordsFromFields(){
+    carCoords = []
+    seenCoords = []
+    for (var y=0; y < fields.length; ++y){
+        var line = fields[y];
+        for(var x=0; x < line.length; ++x){
+            if (fields[y][x] == 'C'){
+                carCoords = [x, y]
+            }
+            if (fields[y][x] ==  'X'){
+                seenCoords.push([x, y])
+            }
+        }
+    }
+    relativeSeenCoords = []
+    for(var k in seenCoords){
+        relativeSeenCoords.push([seenCoords[k][0]-carCoords[0], seenCoords[k][1]-carCoords[1]])
+    }
+    return relativeSeenCoords;
+}
+
+function rmatrix(phi){
+    return [Math.cos(phi), -Math.sin(phi)], [Math.sin(phi), Math.cos(phi)]
+}
+function dot(mat22, vec2){
+    return [[mat22[0][0]*vec2[0] + mat22[0][1]*vec2[1]], [mat22[1][0]*vec2[0] + mat22[1][1]*vec2[1]]]
+}
+
+function transformedSeenCoords(dir) {
+    
+    originalCoords =  relativeCoordsFromFields();
+    switch(dir){
+        case '^': {
+            return originalCoords;
+        }
+        case '<': {
+            rotated = []
+            R = rmatrix(Math.PI/2.0)
+            for(var k in originalCoords){
+                rotated.push(dot(R, originalCoords[k]))
+            }
+            return rotated
+        }
+        case '>': {
+            rotated = []
+            R = rmatrix(-Math.PI/2.0)
+            for(var k in originalCoords){
+                rotated.push(dot(R, originalCoords[k]))
+            }
+            return rotated
+        }
+        case 'v': {
+            rotated = []
+            R = rmatrix(Math.PI)
+            for(var k in originalCoords){
+                rotated.push(dot(R, originalCoords[k]))
+            }
+            return rotated
+        }
+    }
+};
+
+function isSeen(point, thickData){
+    myCar=thickData.cars.find(function(o){return o.id==thickData.request_id.car_id});
+    myCarPos=myCar.pos;
+    myCarDir=myCar.direction;
+    seenFieldsRelative = transformedSeenCoords(myCarDir);
+    for(var k in seenFieldsRelative){
+        if (point.j == (seenCoords[k][0] + myCarPos.x) && point.i == (seenFieldsRelative[k][1] + myCar.pos.y)){
+            return true
+        }
+    }
+    return false
 }
 
 for(var i = 0; i < GAME.gameMatrix.length; i++){
