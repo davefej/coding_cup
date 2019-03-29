@@ -254,6 +254,9 @@ function transformedSeenCoords(dir) {
             }
             return rotated
         }
+        default: {
+            throw Error("Invalid car direction: "+dir);
+        }
     }
 };
 
