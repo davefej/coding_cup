@@ -71,7 +71,7 @@ function createServer(){
                             "id": car_id,
                             "pos": {"x": 2, "y": 0},
                             "life": 100,
-                            "speed": 2,
+                            "speed": 0,
                             "direction": ">",
                             "next_command": "+",
                             "transported": "100",
@@ -91,7 +91,7 @@ function createServer(){
                           {
                             "id": 101,
                             "pos": {"x": 28, "y": 30},
-                            "dest_pos": {"x": 40, "y": 40},
+                            "dest_pos": {"x": 58, "y": 2},
                             "car_id":car_id
                           }
                         ],

@@ -83,13 +83,15 @@ function calculateCommand(){
         //firststep at game or stops at passanger
         var direction = calculateDirection(car.pos,toNode);
         if(car.direction != direction){
-            return turnCommandFromDirections(direction);
+            return turnCommandFromDirections(car.direction,direction);
         }else{
             return ACCELERATION;
         }        
     }else{
+        //HALADUNK 1 vel
         var direction = calculateDirection(car.pos,toNode);
         if(direction == car.direction){
+            // JÓ AZ IRÁNY
             if(calcPointsDistance(car.pos,toNode) == 1){
                 if(nextNode){
                     //rotation
@@ -161,7 +163,7 @@ function calcPointsDistance(a,b){
 
 function formatNodeList(nodes){
     var ret = [];
-    for(var i = nodes.length; i >= 0; i--){
+    for(var i = nodes.length -1; i >= 0; i--){
         var positions = nodes[i].id.split(":");
         ret.push({
             x:positions[1],
