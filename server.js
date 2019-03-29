@@ -12,7 +12,6 @@ app.use(express.json());
 app.post('/startorstop', function(req, res){ 
     RUNNING = !RUNNING;
     if(RUNNING){
-        game.setMap(req.body.gameMap);
         tcp.connect(onJsonMessage);
         setTimeout(function(){                 
             //initial message
@@ -30,12 +29,14 @@ app.get('/wait_for_thick', function(req, res){
 
 onJsonMessage = function(data){
     console.log("THICK ARRIVED:",data);
+    var stepData = game.calculateNextStep(data);     
     if(PENDING_HTTP_RESP && !PENDING_HTTP_RESP.finished){
-        PENDING_HTTP_RESP.send(data);
+        PENDING_HTTP_RESP.send({
+            thick:data,
+            sent:stepData
+        });
         PENDING_HTTP_RESP.end();
     }
-
-    var stepData = game.calculateNextStep(data);     
     //timeout, not to kill local TCP socket with infinite running
     setTimeout(function(){
         if(tcp.sendJson(stepData)){

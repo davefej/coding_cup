@@ -24,7 +24,8 @@ function pollThickFromServer(){
         success: function(data){
             console.log(data)
             repeatAfterDelay();
-            drawMap(data);
+            drawMap(data.thick);
+            window.steps.push(data);
         },
         error: function(data) {
             console.error(data)
@@ -33,9 +34,10 @@ function pollThickFromServer(){
     });
 }
 
-function startOrStop(){
+function startOrStop(){    
     POLL = !POLL;
     if(POLL){
+        window.steps = [];
         pollThickFromServer();
     }  
     $.ajax({
