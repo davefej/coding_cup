@@ -9,7 +9,8 @@ var dev_server_thick_id;
 module.exports = {
     connect(onMessage){
         dev_server_thick_id = 0;
-        client = new net.Socket();           
+        client = new net.Socket();
+        firstReqest = true;
         client.connect(PORT, IP, function() {
             console.log('TCP Client Connected sucessfully');
         });
@@ -38,12 +39,13 @@ module.exports = {
 
 var gameId = 1;
 var car_id = 1;
+let firstReqest = true;
 function createServer(){
 /***** LOCAL TCP SERVER JUST FOR TESTING *******/
     gameId++;
     car_id++;
     if(IP == '127.0.0.1' && server == undefined){             
-        let firstReqest = true;
+        
         server = net.createServer(function(socket) {                           
             socket.on('data', function(data) {
                 var requestData = JSON.parse(data.toString());                
@@ -67,7 +69,7 @@ function createServer(){
                         "cars": [
                           {
                             "id": car_id,
-                            "pos": {"x": 0, "y": 0},
+                            "pos": {"x": 2, "y": 0},
                             "life": 100,
                             "speed": 2,
                             "direction": ">",
@@ -88,7 +90,7 @@ function createServer(){
                         "passengers": [
                           {
                             "id": 101,
-                            "pos": {"x": 30, "y": 30},
+                            "pos": {"x": 28, "y": 30},
                             "dest_pos": {"x": 40, "y": 40},
                             "car_id":car_id
                           }

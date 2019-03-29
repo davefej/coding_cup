@@ -16,12 +16,12 @@ app.post('/startorstop', function(req, res){
         tcp.connect(onJsonMessage);
         setTimeout(function(){                 
             //initial message
-            tcp.sendJson(game.firstMessage());    
+            tcp.sendJson(game.getFirstMessage());
         },100);
     }else{
         tcp.close();
     }
-    res.end(RUNNING ? "START" : "STOP");    
+    res.end(RUNNING ? "START" : "STOP");
 });
 
 app.get('/wait_for_thick', function(req, res){ 

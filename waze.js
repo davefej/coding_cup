@@ -1,0 +1,82 @@
+let ngraphPath = require('ngraph.path');
+let createGraph = require('ngraph.graph');
+
+var board,graph,pathFinder,built = false;
+module.exports  = {
+    build(brd){
+        board = brd;
+        graph = createGraph();
+        for(var i = 0; i < board.matrix.length; i++){
+            for(var j = 0; j < board.matrix.length; j++){
+                findAllLinearStreets({i:i,j:j});
+            }
+        }
+        pathFinder = ngraphPath.aStar(graph, {
+            distance(fromNode, toNode, link) {
+              return link.data.weight;
+            }
+        });
+    },
+    navigate(from,to){
+        from.x = from.j || from.x;
+        from.y = from.i || from.y;
+        to.x = to.j || to.x;
+        to.y = to.i || to.y;
+        return pathFinder.find(from.y+":"+from.x,to.y+":"+to.x);
+    },
+    calcDistance(from,to){
+        from.x = from.j || from.x;
+        from.y = from.i || from.y;
+        to.x = to.j || to.x;
+        to.y = to.i || to.y;
+        var nodes = pathFinder.find(from.y+":"+from.x,to.y+":"+to.x);
+        var sum = 0;
+        for(var i = nodes.length-1; i > 0; i--){
+            var akt = nodes[i].id.split(":");
+            var next = nodes[i-1].id.split(":");
+            sum += (Math.abs(akt[0]-next[0]) + Math.abs(akt[1]-next[1]));
+        }
+        return sum;            
+    }
+};
+
+function findAllLinearStreets(from, across){
+    if(!isAszfalt(from)){
+        return;
+    } 
+    if(!across){
+        //first find
+        findAllLinearStreets(from,{i:from.i+1,j:from.j});
+        findAllLinearStreets(from,{i:from.i-1,j:from.j});
+        findAllLinearStreets(from,{i:from.i,j:from.j+1});
+        findAllLinearStreets(from,{i:from.i,j:from.j-1});
+        return;
+    }
+    if(across.i < 0 || across.j < 0 || across.i >= board.width || across.j >= board.height){
+        //Not in map
+        return;
+    }
+    if(isAszfalt(across)){
+        var distance = Math.abs(from.i-across.i) + Math.abs(from.j-across.j);
+        graph.addLink(from.i+":"+from.j,across.i+":"+across.j,{weight:calcWeight(from,across,distance)});
+        findAllLinearStreets(from,{
+            i:across.i + (across.i-from.i)/distance,
+            j:across.j + (across.j-from.j)/distance
+        });
+    }
+}
+
+function isAszfalt(point){
+    return board.matrix[point.i][point.j] == ASZFALT || board.matrix[point.i][point.j] == ZEBRA
+}
+
+function calcWeight(from,dest,distance){
+    if(distance > 5){
+        return 5 + Math.floor((distance-5) / 3)
+    }else{
+        return distance;
+    }
+}
+
+
+
