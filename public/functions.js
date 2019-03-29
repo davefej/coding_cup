@@ -79,8 +79,10 @@ function drawMap(thickData){
     for(var rowIdx = 0; rowIdx < GAME.gameMatrix.length; rowIdx++){
         for(var colIdx = 0; colIdx < GAME.gameMatrix[rowIdx].length; colIdx++){
             GAME.canvasContext.fillStyle = getColorByField(GAME.gameMatrix[rowIdx][colIdx]);
-            if (isSeen({i: rowIdx, j: colIdx}, thickData)) {
-                GAME.canvasContext.fillStyle = "#FF0000";
+            if(thickData){
+                if (isSeen({i: rowIdx, j: colIdx}, thickData)) {
+                    GAME.canvasContext.fillStyle = "#FF0000";
+                }
             }
             GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
         }
