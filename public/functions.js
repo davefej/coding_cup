@@ -109,6 +109,7 @@ function drawMap(thickData){
     // simulateCarPos({x: 24, y: 18}, 'v', GAME);
     // simulateCarPos({x: 29, y: 45}, '>', GAME);
     simulateCarPos({x: 56, y: 43}, '^', GAME);
+    simulateCarPos({x: 19, y: 46}, '>', GAME);
 }
 
 function getColorByField(field){
@@ -264,21 +265,10 @@ function transformedSeenCoords(dir) {
     }
 };
 
-// DEBUG
-console.log("transformedSeenCoords('^'): ");
-console.log(transformedSeenCoords('^'));
-console.log("transformedSeenCoords('<'): ");
-console.log(transformedSeenCoords('<'));
-console.log("transformedSeenCoords('>'): ");
-console.log(transformedSeenCoords('>'));
-console.log("transformedSeenCoords('v'): ");
-console.log(transformedSeenCoords('v'));
-
-
 function isSeen(point, carCoords, carDir){
     var seenRel = transformedSeenCoords(carDir);
     for(var k in seenRel){
-        if (point.j == (seenRel[k].x + carCoords.x) && point.i == (seenRel[k].y - carCoords.pos.y)){
+        if (point.x == (seenRel[k].x + carCoords.x) && point.y == (seenRel[k].y + carCoords.y)){
             return true;
         }
     }
@@ -299,7 +289,7 @@ function simulateCarPos(carCoords, carDir, GAME){
     for(var rowIdx = 0; rowIdx < GAME.gameMatrix.length; rowIdx++){
         for(var colIdx = 0; colIdx < GAME.gameMatrix[rowIdx].length; colIdx++){
             if (isSeen({x: colIdx, y: rowIdx}, carCoords, carDir)){
-                GAME.canvasContext.fillStyle = "#FF000088";
+                GAME.canvasContext.fillStyle = "#FF0000AA";
                 GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
             }
             if (colIdx === carCoords.x && rowIdx === carCoords.y){
