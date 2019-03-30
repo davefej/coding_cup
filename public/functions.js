@@ -5,7 +5,8 @@ window.GAME = {
     mapRatio:10,
     canvasContext:undefined,
     pathFinder:undefined,
-    graph:createGraph()
+    graph:createGraph(),
+    myCar: undefined
 };
 
 var POLL = false;
@@ -76,15 +77,20 @@ $( document ).ready(function() {
 function drawMap(thickData){
     GAME.canvasContext.fillStyle = "#ffffff";
     GAME.canvasContext.fillRect(0,0,GAME.gameMatrix[0].length,GAME.gameMatrix.length);
+    if (thickData){
+        var myCarId = thickData.request_id.car_id;
+        GAME.myCar = thickData.cars.find(function(c) {return c.id === myCarId});
+    }
     for(var rowIdx = 0; rowIdx < GAME.gameMatrix.length; rowIdx++){
         for(var colIdx = 0; colIdx < GAME.gameMatrix[rowIdx].length; colIdx++){
             GAME.canvasContext.fillStyle = getColorByField(GAME.gameMatrix[rowIdx][colIdx]);
-            if(thickData){
-                // if (isSeen({i: rowIdx, j: colIdx}, thickData)) {
-                //     GAME.canvasContext.fillStyle = "#FF0000";
-                // }
-            }
             GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+            if(GAME.myCar){
+                if (isSeen({x: colIdx, y: rowIdx}, GAME.myCar.pos, GAME.myCar.direction)) {
+                    GAME.canvasContext.fillStyle = "#FF000088";
+                    GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+                }
+            }
             /*if(GAME.graph.getLinks(rowIdx+":"+colIdx)){
                 GAME.canvasContext.fillStyle = "#ff333399";
                 GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
@@ -105,11 +111,12 @@ function drawMap(thickData){
             GAME.canvasContext.fillRect(car.pos.x*GAME.mapRatio,car.pos.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
         });
     }
-    /** Simulat car */
-    // simulateCarPos({x: 24, y: 18}, 'v', GAME);
-    // simulateCarPos({x: 29, y: 45}, '>', GAME);
-    simulateCarPos({x: 56, y: 43}, '^', GAME);
-    simulateCarPos({x: 19, y: 46}, '>', GAME);
+    
+    /** Simulate cars */
+    // simulateCarPos({x: 56, y: 43}, '^', GAME);
+    // simulateCarPos({x: 2, y: 17}, 'v', GAME);
+    // simulateCarPos({x: 19, y: 46}, '>', GAME);
+    // simulateCarPos({x: 21, y: 39}, '<', GAME);
 }
 
 function getColorByField(field){
@@ -185,14 +192,14 @@ function calcWeight(from,dest,distance){
 }
 
 /**
- * Printing area seen by the car 
+ * Area seen by the car 
  */
-const fields = [
+var fields = [
     "         ",
     "   XXX   ",
     "   XXX   ",
     "   XXX   ",
-    "   XXXX  ",
+    "   XXX   ",
     "  XXXXX  ",
     " XXXXXXX ",
     " XXXXXXX ",
@@ -275,16 +282,6 @@ function isSeen(point, carCoords, carDir){
     return false;
 }
 
-// function isSeen(point, thickData){
-//     myCar=thickData.cars.find(function(o){return o.id==thickData.request_id.car_id});
-//     myCarPos=myCar.pos;
-//     myCarDir=myCar.direction;
-    
-// }
-
-/**
- * Debug function
- */
 function simulateCarPos(carCoords, carDir, GAME){
     for(var rowIdx = 0; rowIdx < GAME.gameMatrix.length; rowIdx++){
         for(var colIdx = 0; colIdx < GAME.gameMatrix[rowIdx].length; colIdx++){
