@@ -86,7 +86,7 @@ function drawMap(thickData){
             GAME.canvasContext.fillStyle = getColorByField(GAME.gameMatrix[rowIdx][colIdx]);
             GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
             if(GAME.myCar){
-                if (isSeen({x: colIdx, y: rowIdx}, GAME.myCar.pos, GAME.myCar.direction)) {
+                if (isSeen({x: colIdx, y: rowIdx}, GAME.myCar)) {
                     GAME.canvasContext.fillStyle = "#FF000088";
                     GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
                 }
@@ -194,7 +194,7 @@ function calcWeight(from,dest,distance){
 /**
  * Area seen by the car 
  */
-var fields = [
+var viewArea = [
     "         ",
     "   XXX   ",
     "   XXX   ",
@@ -210,16 +210,16 @@ var fields = [
     "         "
 ];
 
-function relativeCoordsFromFields(){
+const viewAreaCoords = (function() {
     var carCoords = []
     var seenCoords = []
-    for (var y=0; y < fields.length; ++y){
-        var line = fields[y];
+    for (var y=0; y < viewArea.length; ++y){
+        var line = viewArea[y];
         for(var x=0; x < line.length; ++x){
-            if (fields[y][x] == 'C'){
+            if (viewArea[y][x] == 'C'){
                 carCoords = {x: x, y:y}
             }
-            if (fields[y][x] ==  'X'){
+            if (viewArea[y][x] ==  'X'){
                 seenCoords.push({x: x, y: y})
             }
         }
@@ -229,8 +229,7 @@ function relativeCoordsFromFields(){
         relativeSeenCoords.push({x: seenCoords[k].x-carCoords.x, y: seenCoords[k].y-carCoords.y})
     }
     return relativeSeenCoords;
-}
-const originalCoords =  relativeCoordsFromFields();
+})();
 
 function rmatrix(phi){
     return [[Math.cos(phi), -Math.sin(phi)], [Math.sin(phi), Math.cos(phi)]]
@@ -245,26 +244,26 @@ function transformedSeenCoords(dir) {
      * This should be changed back to accept only '>', '<', 'v', '^'
      */
     if (dir === '^' || dir === 'UP'){
-        return originalCoords;
+        return viewAreaCoords;
     } else if (dir === 'v' || dir === 'DOWN') {
         var rotated = [];
         var R = rmatrix(Math.PI);
-        for(var k in originalCoords){
-            rotated.push(dot(R, originalCoords[k]));
+        for(var k in viewAreaCoords){
+            rotated.push(dot(R, viewAreaCoords[k]));
         }
         return rotated;
     } else if (dir === 'LEFT' || dir === '<'){
         var rotated = [];
         var R = rmatrix(Math.PI/2.0);
-        for(var k in originalCoords){
-            rotated.push(dot(R, originalCoords[k]));
+        for(var k in viewAreaCoords){
+            rotated.push(dot(R, viewAreaCoords[k]));
         }
         return rotated;
     } else if (dir === 'RIGHT' || dir === '>'){
         var rotated = [];
         var R = rmatrix(-Math.PI/2.0);
-        for(var k in originalCoords){
-            rotated.push(dot(R, originalCoords[k]));
+        for(var k in viewAreaCoords){
+            rotated.push(dot(R, viewAreaCoords[k]));
         }
         return rotated;
     } else {
@@ -272,10 +271,19 @@ function transformedSeenCoords(dir) {
     }
 };
 
-function isSeen(point, carCoords, carDir){
-    var seenRel = transformedSeenCoords(carDir);
-    for(var k in seenRel){
-        if (point.x == (seenRel[k].x + carCoords.x) && point.y == (seenRel[k].y + carCoords.y)){
+function mapCoordsSeenByCar(car) {
+    var seenRel = transformedSeenCoords(car.direction);
+    var rv = [];
+    seenRel.forEach(c => {
+        rv.push({x: c.x + car.pos.x, y: c.y + car.pos.y});
+    });
+    return rv;
+}
+
+function isSeen(point, car){
+    var pointsSeen = mapCoordsSeenByCar(car);
+    for(let p of pointsSeen){
+        if(p.x === point.x && p.y === point.y) {
             return true;
         }
     }
@@ -295,6 +303,10 @@ function simulateCarPos(carCoords, carDir, GAME){
             }
         }
     }
+}
+
+function canCollide(pedestrian, car){
+    return isSeen(pedestrian.pos, car);
 }
 
 for(var i = 0; i < GAME.gameMatrix.length; i++){
