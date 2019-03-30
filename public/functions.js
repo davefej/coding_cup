@@ -80,9 +80,9 @@ function drawMap(thickData){
         for(var colIdx = 0; colIdx < GAME.gameMatrix[rowIdx].length; colIdx++){
             GAME.canvasContext.fillStyle = getColorByField(GAME.gameMatrix[rowIdx][colIdx]);
             if(thickData){
-                if (isSeen({i: rowIdx, j: colIdx}, thickData)) {
-                    GAME.canvasContext.fillStyle = "#FF0000";
-                }
+                // if (isSeen({i: rowIdx, j: colIdx}, thickData)) {
+                //     GAME.canvasContext.fillStyle = "#FF0000";
+                // }
             }
             GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
             /*if(GAME.graph.getLinks(rowIdx+":"+colIdx)){
@@ -105,6 +105,10 @@ function drawMap(thickData){
             GAME.canvasContext.fillRect(car.pos.x*GAME.mapRatio,car.pos.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
         });
     }
+    /** Simulat car */
+    // simulateCarPos({x: 24, y: 18}, 'v', GAME);
+    // simulateCarPos({x: 29, y: 45}, '>', GAME);
+    simulateCarPos({x: 56, y: 43}, '^', GAME);
 }
 
 function getColorByField(field){
@@ -179,6 +183,9 @@ function calcWeight(from,dest,distance){
     }
 }
 
+/**
+ * Printing area seen by the car 
+ */
 const fields = [
     "         ",
     "   XXX   ",
@@ -196,81 +203,111 @@ const fields = [
 ];
 
 function relativeCoordsFromFields(){
-    carCoords = []
-    seenCoords = []
+    var carCoords = []
+    var seenCoords = []
     for (var y=0; y < fields.length; ++y){
         var line = fields[y];
         for(var x=0; x < line.length; ++x){
             if (fields[y][x] == 'C'){
-                carCoords = [x, y]
+                carCoords = {x: x, y:y}
             }
             if (fields[y][x] ==  'X'){
-                seenCoords.push([x, y])
+                seenCoords.push({x: x, y: y})
             }
         }
     }
-    relativeSeenCoords = []
+    var relativeSeenCoords = []
     for(var k in seenCoords){
-        relativeSeenCoords.push([seenCoords[k][0]-carCoords[0], seenCoords[k][1]-carCoords[1]])
+        relativeSeenCoords.push({x: seenCoords[k].x-carCoords.x, y: seenCoords[k].y-carCoords.y})
     }
     return relativeSeenCoords;
 }
+const originalCoords =  relativeCoordsFromFields();
 
 function rmatrix(phi){
-    return [Math.cos(phi), -Math.sin(phi)], [Math.sin(phi), Math.cos(phi)]
+    return [[Math.cos(phi), -Math.sin(phi)], [Math.sin(phi), Math.cos(phi)]]
 }
+
 function dot(mat22, vec2){
-    return [[mat22[0][0]*vec2[0] + mat22[0][1]*vec2[1]], [mat22[1][0]*vec2[0] + mat22[1][1]*vec2[1]]]
+    return {x: Math.round(mat22[0][0]*vec2.x + mat22[0][1]*vec2.y), y: Math.round(mat22[1][0]*vec2.x + mat22[1][1]*vec2.y)}
 }
 
 function transformedSeenCoords(dir) {
-    
-    originalCoords =  relativeCoordsFromFields();
-    switch(dir){
-        case '^': {
-            return originalCoords;
+    /**
+     * This should be changed back to accept only '>', '<', 'v', '^'
+     */
+    if (dir === '^' || dir === 'UP'){
+        return originalCoords;
+    } else if (dir === 'v' || dir === 'DOWN') {
+        var rotated = [];
+        var R = rmatrix(Math.PI);
+        for(var k in originalCoords){
+            rotated.push(dot(R, originalCoords[k]));
         }
-        case '<': {
-            rotated = []
-            R = rmatrix(Math.PI/2.0)
-            for(var k in originalCoords){
-                rotated.push(dot(R, originalCoords[k]))
-            }
-            return rotated
+        return rotated;
+    } else if (dir === 'LEFT' || dir === '<'){
+        var rotated = [];
+        var R = rmatrix(Math.PI/2.0);
+        for(var k in originalCoords){
+            rotated.push(dot(R, originalCoords[k]));
         }
-        case '>': {
-            rotated = []
-            R = rmatrix(-Math.PI/2.0)
-            for(var k in originalCoords){
-                rotated.push(dot(R, originalCoords[k]))
-            }
-            return rotated
+        return rotated;
+    } else if (dir === 'RIGHT' || dir === '>'){
+        var rotated = [];
+        var R = rmatrix(-Math.PI/2.0);
+        for(var k in originalCoords){
+            rotated.push(dot(R, originalCoords[k]));
         }
-        case 'v': {
-            rotated = []
-            R = rmatrix(Math.PI)
-            for(var k in originalCoords){
-                rotated.push(dot(R, originalCoords[k]))
-            }
-            return rotated
-        }
-        default: {
-            throw Error("Invalid car direction: "+dir);
-        }
+        return rotated;
+    } else {
+        throw Error("Invalid car direction: "+dir);
     }
 };
 
-function isSeen(point, thickData){
-    myCar=thickData.cars.find(function(o){return o.id==thickData.request_id.car_id});
-    myCarPos=myCar.pos;
-    myCarDir=myCar.direction;
-    seenFieldsRelative = transformedSeenCoords(myCarDir);
-    for(var k in seenFieldsRelative){
-        if (point.j == (seenCoords[k][0] + myCarPos.x) && point.i == (seenFieldsRelative[k][1] + myCar.pos.y)){
-            return true
+// DEBUG
+console.log("transformedSeenCoords('^'): ");
+console.log(transformedSeenCoords('^'));
+console.log("transformedSeenCoords('<'): ");
+console.log(transformedSeenCoords('<'));
+console.log("transformedSeenCoords('>'): ");
+console.log(transformedSeenCoords('>'));
+console.log("transformedSeenCoords('v'): ");
+console.log(transformedSeenCoords('v'));
+
+
+function isSeen(point, carCoords, carDir){
+    var seenRel = transformedSeenCoords(carDir);
+    for(var k in seenRel){
+        if (point.j == (seenRel[k].x + carCoords.x) && point.i == (seenRel[k].y - carCoords.pos.y)){
+            return true;
         }
     }
-    return false
+    return false;
+}
+
+// function isSeen(point, thickData){
+//     myCar=thickData.cars.find(function(o){return o.id==thickData.request_id.car_id});
+//     myCarPos=myCar.pos;
+//     myCarDir=myCar.direction;
+    
+// }
+
+/**
+ * Debug function
+ */
+function simulateCarPos(carCoords, carDir, GAME){
+    for(var rowIdx = 0; rowIdx < GAME.gameMatrix.length; rowIdx++){
+        for(var colIdx = 0; colIdx < GAME.gameMatrix[rowIdx].length; colIdx++){
+            if (isSeen({x: colIdx, y: rowIdx}, carCoords, carDir)){
+                GAME.canvasContext.fillStyle = "#FF000088";
+                GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+            }
+            if (colIdx === carCoords.x && rowIdx === carCoords.y){
+                GAME.canvasContext.fillStyle = "#0000FF";
+                GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+            }
+        }
+    }
 }
 
 for(var i = 0; i < GAME.gameMatrix.length; i++){

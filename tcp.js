@@ -1,8 +1,10 @@
 const net = require('net');
 var split = require('split');
 var client;
-//var IP = '127.0.0.1';
-//var PORT = 1337;
+
+// var IP = '127.0.0.1';
+// var PORT = 1337;
+
 var IP = '31.46.64.35';
 var PORT = 12323;
 
@@ -35,7 +37,7 @@ module.exports = {
     },
     close(){
         console.error("destroy connection!");
-        client.destroy();        
+        client.destroy();
     }
 };
 
@@ -72,10 +74,10 @@ function createServer(){
                         "cars": [
                           {
                             "id": car_id,
-                            "pos": {"x": 2, "y": 0},
+                            "pos": {"x": 14, "y": 15},
                             "life": 100,
                             "speed": 0,
-                            "direction": ">",
+                            "direction": "v",
                             "next_command": "+",
                             "transported": "100",
                             "passenger_id": "1"
