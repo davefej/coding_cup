@@ -6,7 +6,8 @@ window.GAME = {
     canvasContext:undefined,
     pathFinder:undefined,
     graph:createGraph(),
-    myCar: undefined
+    myCar: undefined,
+    myPassenger: undefined
 };
 
 var POLL = false;
@@ -84,6 +85,12 @@ function drawMap(thickData){
         var myCarId = thickData.request_id.car_id;
         GAME.myCar = thickData.cars.find(function(c) {return c.id === myCarId});
     }
+    // Ha szallitok utast
+    if(GAME.myCar && GAME.myCar.passenger_id){
+        GAME.myPassenger = thickData.passengers.find(function(o){ return o.id == GAME.myCar.passenger_id });
+    }else{
+        GAME.myPassenger = undefined;
+    }
     for(var rowIdx = 0; rowIdx < GAME.gameMatrix.length; rowIdx++){
         for(var colIdx = 0; colIdx < GAME.gameMatrix[rowIdx].length; colIdx++){
             GAME.canvasContext.fillStyle = getColorByField(GAME.gameMatrix[rowIdx][colIdx]);
@@ -101,11 +108,14 @@ function drawMap(thickData){
                 tox = GAME.mapRatio*normals[GAME.myCar.direction].x + fromx;
                 toy = GAME.mapRatio*normals[GAME.myCar.direction].y + fromy;
                 canvas_arrow(GAME.canvasContext, fromx + 0.5*GAME.mapRatio, fromy + 0.5*GAME.mapRatio, tox + 0.5*GAME.mapRatio, toy + 0.5*GAME.mapRatio, 5);
+
+                // Draw passenger destinations
+                if(GAME.myPassenger){
+                    GAME.canvasContext.fillStyle = "#0000FF";
+                    GAME.canvasContext.fillRect(GAME.myPassenger.dest_pos.x*GAME.mapRatio,
+                        GAME.myPassenger.dest_pos.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+                }
             }
-            /*if(GAME.graph.getLinks(rowIdx+":"+colIdx)){
-                GAME.canvasContext.fillStyle = "#ff333399";
-                GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
-            }*/
         }
     }
     if(thickData){

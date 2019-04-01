@@ -143,10 +143,10 @@ function isDangerV1(myCar, tickData){
     }
 
     var normals = {
-        '^': {x: 0, y: 1},
+        '^': {x: 0, y: -1},
         '>': {x: 1, y: 0},
         '<': {x: -1, y: 0},
-        'v': {x: 0, y: -1}
+        'v': {x: 0, y: 1}
     };
 
     for(let car of carsSeen){
