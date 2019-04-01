@@ -29,6 +29,16 @@ app.get('/wait_for_thick', function(req, res){
     PENDING_HTTP_RESPS.push(res);
 });
 
+app.get('/loadGames', function(req, res){ 
+    var ret = [];
+    fs.readdirSync("./logs").forEach(file => {
+        var content = fs.readFileSync("./logs/"+file);
+        ret.push(JSON.parse(content));
+    });
+    res.end(JSON.stringify(ret));
+});
+
+
 onJsonMessage = function(data){
     changeDirection(data);
     var stepData = game.calculateNextStep(data);

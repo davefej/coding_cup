@@ -13,11 +13,38 @@
         <div>
             <button onclick="startOrStop()">Start or Stop</button>    
         </div> 
-        <div>  
-            Térkép méret:<input onchange="mapSizeChanged(this.value)" type="range" min="1" max="30" value="10" id="mapSize"/>
-        </div>  
-        <div>  
-            <canvas id="canvas"></canvas>
+        
+        <div style="display: flex;">  
+
+            <div  style="min-width:200px;background-color: lightgrey;overflow-y: auto;">
+                <div style="text-align:center; font-size:2em;">Korábbi játékok</div>
+                <table id="oldlist" style="width: 100%;">
+
+                </table>
+            </div>
+            <div style="flex:1;padding:1em;">
+                <div style="text-align:center;">
+                    <table align="center">
+                        <tr>
+                            <th>Thick</th>
+                            <th>Step</th>
+                            <th>Transported</th>
+                        </tr>
+                        <tr>
+                            <td id="thicknum">0</td>
+                            <td id="stepnum">0</td>
+                            <td id="transportednum">0</td>
+                        </tr>
+                    </table>                        
+                </div>
+
+                <canvas id="canvas"></canvas>                
+            </div>
+            <div  style="min-width:200px;background-color: lightgrey;overflow-y: auto;text-align:left;">
+                <div style="text-align:center; font-size:2em;">Játék beállítások</div>
+                <div>Step millisec <input type="number" value="100"/></div>
+                <div>Térkép méret:<input onchange="mapSizeChanged(this.value)" type="range" min="1" max="30" value="10" id="mapSize"/></div>
+            </div>       
         </div> 
     </body>
 </html>

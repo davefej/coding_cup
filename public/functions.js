@@ -73,10 +73,7 @@ for(var i = 0; i < mapRows.length; i++){
     }
 }
 
-$( document ).ready(function() {
-    mapSizeChanged(10);    
-    drawMap();
-});
+
 
 function drawMap(thickData){
     GAME.canvasContext.fillStyle = "#ffffff";
@@ -86,7 +83,7 @@ function drawMap(thickData){
         GAME.myCar = thickData.cars.find(function(c) {return c.id === myCarId});
     }
     // Ha szallitok utast
-    if(GAME.myCar && GAME.myCar.passenger_id){
+    if(GAME.myCar && GAME.myCar.passenger_id && thickData.passengers){
         GAME.myPassenger = thickData.passengers.find(function(o){ return o.id == GAME.myCar.passenger_id });
     }else{
         GAME.myPassenger = undefined;
@@ -133,11 +130,6 @@ function drawMap(thickData){
         });
     }
     
-    /** Simulate cars */
-    // simulateCarPos({x: 56, y: 43}, '>', GAME);
-    // simulateCarPos({x: 2, y: 17}, 'v', GAME);
-    // simulateCarPos({x: 19, y: 46}, '>', GAME);
-    // simulateCarPos({x: 21, y: 39}, '^', GAME);
 }
 
 function getColorByField(field){
@@ -386,3 +378,46 @@ GAME.pathFinder = ngraphPath.aStar(GAME.graph, {
       return link.data.weight;
     }
 });
+
+$( document ).ready(function() {
+    $.ajax({
+        url: 'loadGames',
+        type: 'GET',
+        dataType: "json",
+        success: function(data){                        
+            data.forEach(game => {               
+                createGameDiv(game);
+            });
+        },
+        error: function(data) {
+            
+        }
+    });
+    
+    
+    mapSizeChanged(10);    
+    drawMap();
+});
+
+function createGameDiv(game){
+    var container = document.createElement("tr");
+    var id = document.createElement("td");
+    id.innerHTML = game[0].thick.request_id.game_id;
+    container.appendChild(id);    
+    var points = document.createElement("td");
+    var mycar = game[game.length-1].thick.cars.find(function(c) {return c.id === game[0].thick.request_id.car_id});
+    points.innerHTML = mycar.transported;
+    container.appendChild(points);
+    
+    var playtd = document.createElement("td");
+    var load = document.createElement("button");
+    load.innerHTML="Elindít";
+    playtd.appendChild(load);
+    load.addEventListener("click",function(){
+        //TODO
+    });
+    container.appendChild(playtd);
+
+    document.getElementById("oldlist").appendChild(container);
+}
+
