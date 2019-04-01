@@ -298,3 +298,27 @@ function turnDirectionFromCommandAndDirection(direction,command){
         return DOWN;
     }
 }
+
+
+function turnAzonnaliCommandFromDirections(lastDirection,nextDirection){
+    if(lastDirection == UP && nextDirection == LEFT){
+        return GO_LEFT;
+    }else if(lastDirection == UP && nextDirection == RIGHT){
+        return GO_RIGHT;
+    }else if(lastDirection == DOWN && nextDirection == LEFT){
+        return GO_RIGHT;
+    }else if(lastDirection == DOWN && nextDirection == RIGHT){
+        return GO_LEFT;
+    }else if(lastDirection == LEFT && nextDirection == UP){
+        return GO_RIGHT;
+    }else if(lastDirection == LEFT && nextDirection == DOWN){
+        return GO_LEFT;
+    }else if(lastDirection == RIGHT && nextDirection == UP){
+        return GO_LEFT;
+    }else if(lastDirection == RIGHT && nextDirection == DOWN){
+        return GO_RIGHT;
+    }else{
+        console.warn("Something very not cool going on");
+        return GO_LEFT;
+    }
+}

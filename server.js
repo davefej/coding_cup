@@ -4,7 +4,7 @@ const port = 3000
 const game = require('./game.js')
 const tcp = require('./tcp.js')
 var RUNNING = false;
-var PENDING_HTTP_RESP;
+var PENDING_HTTP_RESPS = [];
 
 app.use(express.static('public'));
 app.use(express.json());
@@ -24,20 +24,21 @@ app.post('/startorstop', function(req, res){
 });
 
 app.get('/wait_for_thick', function(req, res){ 
-    PENDING_HTTP_RESP = res;
+    PENDING_HTTP_RESPS.push(res);
 });
 
 onJsonMessage = function(data){
     changeDirection(data);
     console.log("car passanger:"+data.cars[0].passenger_id);
     var stepData = game.calculateNextStep(data);     
-    if(PENDING_HTTP_RESP && !PENDING_HTTP_RESP.finished){
-        PENDING_HTTP_RESP.send({
+    var httpResp = PENDING_HTTP_RESPS.pop();
+    if(httpResp  && !httpResp.finished){
+        httpResp.send({
             thick:data,
             sent:stepData,
             info:game.getInfo()
         });
-        PENDING_HTTP_RESP.end();
+        httpResp.end();
     }
     //timeout, not to kill local TCP socket with infinite running
     setTimeout(function(){

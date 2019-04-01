@@ -88,8 +88,6 @@ function calcWeight(from,dest,distance){
     }
 }
 
-
-
 function nearestAszfaltIfJarda(point){
     if(isAszfalt(point)){
         return point;
@@ -105,6 +103,13 @@ function nearestAszfaltIfJarda(point){
     }
     if(isAszfalt({x:point.x, y:point.y-1})){
         return {x:point.x, y:point.y-1}
+    }
+    for(var x = -1; x <=1; x++){
+        for(var y = -1; y <=1; y++){
+            if(isAszfalt({x:point.x+x, y:point.y+y})){
+                return {x:point.x+x, y:point.y+y};
+            }
+        }
     }
     throw Error("Nincs Út a utas mellett");
 }
