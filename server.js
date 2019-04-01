@@ -29,11 +29,11 @@ app.get('/wait_for_thick', function(req, res){
 });
 
 onJsonMessage = function(data){
-    fs.appendFileSync("./log_"+data.request_id.game_id,JSON.stringify(data)+"\n");
+    fs.appendFileSync("./logs/log_"+data.request_id.game_id,JSON.stringify(data)+"\n");
     changeDirection(data);
 //    console.log("car passanger:"+data.cars[0].passenger_id);
     var stepData = game.calculateNextStep(data);
-    fs.appendFileSync("./log_"+data.request_id.game_id,stepData.command+"\n");
+    fs.appendFileSync("./logs/log_"+data.request_id.game_id,stepData.command+"\n");
     var httpResp = PENDING_HTTP_RESPS.shift();
     if(httpResp  && !httpResp.finished){
         httpResp.send({
