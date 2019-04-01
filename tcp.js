@@ -12,7 +12,7 @@ var server;
 var dev_server_thick_id;
 
 module.exports = {
-    connect(onMessage){
+    connect(onMessage,onClose){
         dev_server_thick_id = 0;
         client = new net.Socket();
         firstReqest = true;
@@ -23,7 +23,8 @@ module.exports = {
             onMessage(JSON.parse(data.toString()));            
         });        
         client.on('close', function() {            
-            console.error("Connection closed!");     
+            console.error("Connection closed!");
+            onClose();  
         });
     },
     sendJson(msg){

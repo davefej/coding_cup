@@ -46,7 +46,7 @@ module.exports = {
         this.transportPassenger();
     },
     passangerTransported(){
-        console.log("Passanger transported")
+        console.log("Passengers transported: "+car.transported || 0)
         currentPassenger = null;
         state = FREE;
     },
@@ -84,7 +84,6 @@ module.exports = {
     carDirection(){
         return car.direction;
     },
-
     commandLog(){
         return stepLog;
     },
@@ -94,9 +93,7 @@ module.exports = {
         if(this.isWaiting()){
             if(car.speed != 0){
                 console.warn("Várakozunk nem 0 sebességgel!");
-                return NO_OP;
-                //throw Error("Várakozunk nem 0 sebességgel!");
-                
+                return NO_OP;                
             }
             return NO_OP;
         }
@@ -106,7 +103,6 @@ module.exports = {
         if(!isAszfalt(futureCar.pos)){
             throw Error("Future Pos nem aszfalt");
         }
-
         if(isSamepos(futureCar.pos,routePoints[0])){
             routePoints.shift();
         }
@@ -127,8 +123,7 @@ module.exports = {
             if(futureCar.speed == 0){
                 //MOST INDULUNK!! Futurecar == car!!
                 if(distanceToNode == 1){
-                    //Egy távolság után fordulni kell majd
-                    
+                    //Egy távolság után fordulni kell majd                    
                     if(directionToNode == futureCar.direction){
                         //Jó irányban vagyunk
                         return ACCELERATION;
@@ -146,8 +141,7 @@ module.exports = {
                         return turnCommandFromDirections(futureCar.direction,directionToNode);
                     }
                 }
-            }else{
-                
+            }else{                
                 if(directionToNode == futureCar.direction){                    
                     //rotation
                     if(nextNode && distanceToNode == 1){                        
@@ -158,39 +152,6 @@ module.exports = {
                 }else{
                     return DECELERATION;
                 }
-                /*
-
-                //Még állunk de az előbb már gyorsítottunk!
-                if(distanceToNode == 0){
-                    //Egy távolság után fordulni kell majd
-                    if(directionToNode == futureCar.direction){
-                        return NO_OP;
-                    }else{
-                        //azonnali turn
-                        return turnAzonnaliCommandFromDirections(futureCar.direction,directionToNode);
-                    }                   
-                }else{
-                    if(futureCar.direction != directionToNode){
-                        return turnAzonnaliCommandFromDirections(futureCar.direction,directionToNode);
-                    }else{
-                        return NO_OP;
-                    }
-                    
-                    if(distanceToNode == 1){
-                        //Normal turn
-                        if(futureCar.direction != directionToNode){
-                            return turnAzonnaliCommandFromDirections(futureCar.direction,nextNodesDirection);
-                        }else{
-                            return turnAzonnaliCommandFromDirections(futureCar.direction,nextNodesDirection);
-                        }
-                    }else{
-                        if(futureCar.direction != directionToNode){
-                            return turnAzonnaliCommandFromDirections(futureCar.direction,nextNodesDirection);
-                        }else{
-                            return NO_OP;
-                        }                        
-                    }
-                }*/
             }
         }else if(car.speed == 1){
             if(futureCar.speed == 0){
@@ -211,7 +172,6 @@ module.exports = {
                         //go forward
                         return NO_OP;
                     }
-
                 }
             }
         }else{
@@ -219,60 +179,6 @@ module.exports = {
         }
     }
 };
-
-function calculateCommand(){
-    if(isSamepos(car.future.pos,routePoints[0])){
-        routePoints.shift();
-    }
-    toNode = routePoints[0];
-    nextNode = routePoints[1];    
-    if(car.future.speed == 0){
-        //firststep at game or stops at passanger
-        var direction = calculateDirection(car.future.pos,toNode);
-        if(car.direction != direction){
-            return turnCommandFromDirections(car.future.direction,direction);
-        }else{
-            return ACCELERATION;
-        }        
-    }else{
-        //HALADUNK 1 vel
-        if(!toNode){                
-            return DECELERATION;          
-        }
-        var direction = calculateDirection(car.future.pos,toNode);
-        if(direction == car.future.direction){
-            if(calcPointsDistance(car.future.pos,toNode) == 1){
-                if(nextNode){
-                    
-                    //rotation
-                    return turnCommandFromDirections(car.future.direction,calculateDirection(toNode,nextNode));
-                }else{
-                    return NO_OP;                    
-                }
-            }else{
-                //go forward
-                if(car.speed == 0){                    
-                    
-                    return ACCELERATION;                    
-                }else{
-                    
-                    return NO_OP;
-                }                
-            }
-        }else{
-            if(toNode){
-                //rotation
-              
-                return turnCommandFromDirections(car.future.direction,direction);
-            }else{
-              
-                //final destination stop
-                return DECELERATION;
-            }   
-        }
-    }
-    
-}
 
 function isSamepos(pos1,pos2){
     return pos1.x == pos2.x && pos1.y == pos2.y;
@@ -343,8 +249,6 @@ function formatNodeList(nodes){
     return ret;
 }
 
-
-
 function futureCarPos(car,command){
     car = JSON.parse(JSON.stringify(car));
     switch(command){
@@ -398,7 +302,6 @@ function futureNO_OP(car){
     }
 }
 
-
 function turnDirectionFromCommandAndDirection(direction,command){
     if(direction == UP && command == CAR_INDEX_LEFT){
         return LEFT;
@@ -418,7 +321,6 @@ function turnDirectionFromCommandAndDirection(direction,command){
         return DOWN;
     }
 }
-
 
 function turnAzonnaliCommandFromDirections(lastDirection,nextDirection){
     if(lastDirection == UP && nextDirection == LEFT){
