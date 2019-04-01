@@ -116,7 +116,7 @@ function drawMap(thickData){
     }
     
     /** Simulate cars */
-    // simulateCarPos({x: 56, y: 43}, '^', GAME);
+    // simulateCarPos({x: 56, y: 43}, '>', GAME);
     // simulateCarPos({x: 2, y: 17}, 'v', GAME);
     // simulateCarPos({x: 19, y: 46}, '>', GAME);
     // simulateCarPos({x: 21, y: 39}, '<', GAME);
@@ -246,25 +246,51 @@ function transformedSeenCoords(dir) {
     /**
      * This should be changed back to accept only '>', '<', 'v', '^'
      */
-    if (dir === '^' || dir === 'UP'){
+    // if (dir === '^' || dir === 'UP'){
+    //     return viewAreaCoords;
+    // } else if (dir === 'v' || dir === 'DOWN') {
+    //     var rotated = [];
+    //     var R = rmatrix(Math.PI);
+    //     for(var k in viewAreaCoords){
+    //         rotated.push(dot(R, viewAreaCoords[k]));
+    //     }
+    //     return rotated;
+    // } else if (dir === 'LEFT' || dir === '<'){
+    //     var rotated = [];
+    //     var R = rmatrix(Math.PI/2.0);
+    //     for(var k in viewAreaCoords){
+    //         rotated.push(dot(R, viewAreaCoords[k]));
+    //     }
+    //     return rotated;
+    // } else if (dir === 'RIGHT' || dir === '>'){
+    //     var rotated = [];
+    //     var R = rmatrix(-Math.PI/2.0);
+    //     for(var k in viewAreaCoords){
+    //         rotated.push(dot(R, viewAreaCoords[k]));
+    //     }
+    //     return rotated;
+    // } else {
+    //     throw Error("Invalid car direction: "+dir);
+    // }
+    if (dir === '^'){
         return viewAreaCoords;
-    } else if (dir === 'v' || dir === 'DOWN') {
+    } else if (dir === 'v') {
         var rotated = [];
         var R = rmatrix(Math.PI);
         for(var k in viewAreaCoords){
             rotated.push(dot(R, viewAreaCoords[k]));
         }
         return rotated;
-    } else if (dir === 'LEFT' || dir === '<'){
+    } else if (dir === '<'){
         var rotated = [];
-        var R = rmatrix(Math.PI/2.0);
+        var R = rmatrix(-Math.PI/2.0);
         for(var k in viewAreaCoords){
             rotated.push(dot(R, viewAreaCoords[k]));
         }
         return rotated;
-    } else if (dir === 'RIGHT' || dir === '>'){
+    } else if (dir === '>'){
         var rotated = [];
-        var R = rmatrix(-Math.PI/2.0);
+        var R = rmatrix(Math.PI/2.0);
         for(var k in viewAreaCoords){
             rotated.push(dot(R, viewAreaCoords[k]));
         }
@@ -296,7 +322,7 @@ function isSeen(point, car){
 function simulateCarPos(carCoords, carDir, GAME){
     for(var rowIdx = 0; rowIdx < GAME.gameMatrix.length; rowIdx++){
         for(var colIdx = 0; colIdx < GAME.gameMatrix[rowIdx].length; colIdx++){
-            if (isSeen({x: colIdx, y: rowIdx}, carCoords, carDir)){
+            if (isSeen({x: colIdx, y: rowIdx}, {pos: carCoords, direction: carDir})){
                 GAME.canvasContext.fillStyle = "#FF0000AA";
                 GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
             }

@@ -47,25 +47,51 @@ function transformedSeenCoords(dir) {
     /**
      * This should be changed back to accept only '>', '<', 'v', '^'
      */
-    if (dir === '^' || dir === 'UP'){
+    // if (dir === '^' || dir === 'UP'){
+    //     return viewAreaCoords;
+    // } else if (dir === 'v' || dir === 'DOWN') {
+    //     var rotated = [];
+    //     var R = rmatrix(Math.PI);
+    //     for(var k in viewAreaCoords){
+    //         rotated.push(dot(R, viewAreaCoords[k]));
+    //     }
+    //     return rotated;
+    // } else if (dir === 'LEFT' || dir === '<'){
+    //     var rotated = [];
+    //     var R = rmatrix(Math.PI/2.0);
+    //     for(var k in viewAreaCoords){
+    //         rotated.push(dot(R, viewAreaCoords[k]));
+    //     }
+    //     return rotated;
+    // } else if (dir === 'RIGHT' || dir === '>'){
+    //     var rotated = [];
+    //     var R = rmatrix(-Math.PI/2.0);
+    //     for(var k in viewAreaCoords){
+    //         rotated.push(dot(R, viewAreaCoords[k]));
+    //     }
+    //     return rotated;
+    // } else {
+    //     throw Error("Invalid car direction: "+dir);
+    // }
+    if (dir === '^'){
         return viewAreaCoords;
-    } else if (dir === 'v' || dir === 'DOWN') {
+    } else if (dir === 'v') {
         var rotated = [];
         var R = rmatrix(Math.PI);
         for(var k in viewAreaCoords){
             rotated.push(dot(R, viewAreaCoords[k]));
         }
         return rotated;
-    } else if (dir === 'LEFT' || dir === '<'){
+    } else if (dir === '<'){
         var rotated = [];
-        var R = rmatrix(Math.PI/2.0);
+        var R = rmatrix(-Math.PI/2.0);
         for(var k in viewAreaCoords){
             rotated.push(dot(R, viewAreaCoords[k]));
         }
         return rotated;
-    } else if (dir === 'RIGHT' || dir === '>'){
+    } else if (dir === '>'){
         var rotated = [];
-        var R = rmatrix(-Math.PI/2.0);
+        var R = rmatrix(Math.PI/2.0);
         for(var k in viewAreaCoords){
             rotated.push(dot(R, viewAreaCoords[k]));
         }
