@@ -57,7 +57,7 @@ onJsonMessage = function(data){
     }    
     setTimeout(function(){
         tcp.sendJson(stepData);
-    },50);
+    },150);
 }
 
 function changeDirection(data){

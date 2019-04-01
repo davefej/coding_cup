@@ -87,6 +87,9 @@ module.exports = {
     commandLog(){
         return stepLog;
     },
+    reset(){
+        car = undefined;
+    },
     calcNextCommand(lastCommand){
         var futureCar = futureCarPos(car,lastCommand);
         car.futureCar = futureCar;
@@ -169,13 +172,26 @@ module.exports = {
                     if(futureCar.direction != directionToNode){
                         return turnCommandFromDirections(futureCar.direction,directionToNode);
                     }else{
-                        //go forward
-                        return NO_OP;
+                        //go forward check if we can go faster :)
+                        if(futureCar.speed < 2 && distanceToNode >= 7){
+                            return ACCELERATION;
+                        }else{
+                            return NO_OP;
+                        }
                     }
                 }
             }
+        }else if(car.speed == 2){
+            if(futureCar.speed == 2 && distanceToNode <= 5){
+                if(distanceToNode <=3){
+                    console.warn("Túl gyorsan közelítjük meg a kanyart");
+                }
+                return DECELERATION;
+            }else{
+                return NO_OP;
+            }            
         }else{
-            throw Error("Egyelőre csak max 1 vel mehetünk");
+            throw Error("Egyelőre csak max 2 vel mehetünk");
         }
     }
 };

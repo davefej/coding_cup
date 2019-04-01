@@ -29,6 +29,8 @@ module.exports  = {
         };
     },
     getFirstMessage(){
+        lastCommand = undefined;
+        driver.reset();
         return {
             token:"1iVXOVZK7ldH5Kr6qYCEkZE6xpR0SXZJkyfQayrKfJ2e9S8xdeTjsV9oohjePSsUXFOcDnevsu918"
         };
