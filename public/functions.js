@@ -5,7 +5,8 @@ window.GAME = {
     mapRatio:10,
     canvasContext:undefined,
     pathFinder:undefined,
-    graph:createGraph()
+    graph:createGraph(),
+    myCar: undefined
 };
 
 var POLL = false;
@@ -79,10 +80,20 @@ $( document ).ready(function() {
 function drawMap(thickData){
     GAME.canvasContext.fillStyle = "#ffffff";
     GAME.canvasContext.fillRect(0,0,GAME.gameMatrix[0].length,GAME.gameMatrix.length);
+    if (thickData){
+        var myCarId = thickData.request_id.car_id;
+        GAME.myCar = thickData.cars.find(function(c) {return c.id === myCarId});
+    }
     for(var rowIdx = 0; rowIdx < GAME.gameMatrix.length; rowIdx++){
         for(var colIdx = 0; colIdx < GAME.gameMatrix[rowIdx].length; colIdx++){
-            GAME.canvasContext.fillStyle = getColorByField(GAME.gameMatrix[rowIdx][colIdx]);            
+            GAME.canvasContext.fillStyle = getColorByField(GAME.gameMatrix[rowIdx][colIdx]);
             GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+            if(GAME.myCar){
+                if (isSeen({x: colIdx, y: rowIdx}, GAME.myCar)) {
+                    GAME.canvasContext.fillStyle = "#FF000088";
+                    GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+                }
+            }
             /*if(GAME.graph.getLinks(rowIdx+":"+colIdx)){
                 GAME.canvasContext.fillStyle = "#ff333399";
                 GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
@@ -103,6 +114,12 @@ function drawMap(thickData){
             GAME.canvasContext.fillRect(car.pos.x*GAME.mapRatio,car.pos.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
         });
     }
+    
+    /** Simulate cars */
+    // simulateCarPos({x: 56, y: 43}, '^', GAME);
+    // simulateCarPos({x: 2, y: 17}, 'v', GAME);
+    // simulateCarPos({x: 19, y: 46}, '>', GAME);
+    // simulateCarPos({x: 21, y: 39}, '<', GAME);
 }
 
 function getColorByField(field){
@@ -177,6 +194,123 @@ function calcWeight(from,dest,distance){
     }
 }
 
+/**
+ * Area seen by the car 
+ */
+var viewArea = [
+    "         ",
+    "   XXX   ",
+    "   XXX   ",
+    "   XXX   ",
+    "   XXX   ",
+    "  XXXXX  ",
+    " XXXXXXX ",
+    " XXXXXXX ",
+    " XXXCXXX ",
+    "  XXXXX  ",
+    "   XXX   ",
+    "    X    ",
+    "         "
+];
+
+const viewAreaCoords = (function() {
+    var carCoords = []
+    var seenCoords = []
+    for (var y=0; y < viewArea.length; ++y){
+        var line = viewArea[y];
+        for(var x=0; x < line.length; ++x){
+            if (viewArea[y][x] == 'C'){
+                carCoords = {x: x, y:y}
+            }
+            if (viewArea[y][x] ==  'X'){
+                seenCoords.push({x: x, y: y})
+            }
+        }
+    }
+    var relativeSeenCoords = []
+    for(var k in seenCoords){
+        relativeSeenCoords.push({x: seenCoords[k].x-carCoords.x, y: seenCoords[k].y-carCoords.y})
+    }
+    return relativeSeenCoords;
+})();
+
+function rmatrix(phi){
+    return [[Math.cos(phi), -Math.sin(phi)], [Math.sin(phi), Math.cos(phi)]]
+}
+
+function dot(mat22, vec2){
+    return {x: Math.round(mat22[0][0]*vec2.x + mat22[0][1]*vec2.y), y: Math.round(mat22[1][0]*vec2.x + mat22[1][1]*vec2.y)}
+}
+
+function transformedSeenCoords(dir) {
+    /**
+     * This should be changed back to accept only '>', '<', 'v', '^'
+     */
+    if (dir === '^' || dir === 'UP'){
+        return viewAreaCoords;
+    } else if (dir === 'v' || dir === 'DOWN') {
+        var rotated = [];
+        var R = rmatrix(Math.PI);
+        for(var k in viewAreaCoords){
+            rotated.push(dot(R, viewAreaCoords[k]));
+        }
+        return rotated;
+    } else if (dir === 'LEFT' || dir === '<'){
+        var rotated = [];
+        var R = rmatrix(Math.PI/2.0);
+        for(var k in viewAreaCoords){
+            rotated.push(dot(R, viewAreaCoords[k]));
+        }
+        return rotated;
+    } else if (dir === 'RIGHT' || dir === '>'){
+        var rotated = [];
+        var R = rmatrix(-Math.PI/2.0);
+        for(var k in viewAreaCoords){
+            rotated.push(dot(R, viewAreaCoords[k]));
+        }
+        return rotated;
+    } else {
+        throw Error("Invalid car direction: "+dir);
+    }
+};
+
+function mapCoordsSeenByCar(car) {
+    var seenRel = transformedSeenCoords(car.direction);
+    var rv = [];
+    seenRel.forEach(c => {
+        rv.push({x: c.x + car.pos.x, y: c.y + car.pos.y});
+    });
+    return rv;
+}
+
+function isSeen(point, car){
+    var pointsSeen = mapCoordsSeenByCar(car);
+    for(let p of pointsSeen){
+        if(p.x === point.x && p.y === point.y) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function simulateCarPos(carCoords, carDir, GAME){
+    for(var rowIdx = 0; rowIdx < GAME.gameMatrix.length; rowIdx++){
+        for(var colIdx = 0; colIdx < GAME.gameMatrix[rowIdx].length; colIdx++){
+            if (isSeen({x: colIdx, y: rowIdx}, carCoords, carDir)){
+                GAME.canvasContext.fillStyle = "#FF0000AA";
+                GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+            }
+            if (colIdx === carCoords.x && rowIdx === carCoords.y){
+                GAME.canvasContext.fillStyle = "#0000FF";
+                GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+            }
+        }
+    }
+}
+
+function canCollide(pedestrian, car){
+    return isSeen(pedestrian.pos, car);
+}
 
 for(var i = 0; i < GAME.gameMatrix.length; i++){
     for(var j = 0; j < GAME.gameMatrix[i].length; j++){
