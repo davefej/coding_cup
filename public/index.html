@@ -6,34 +6,42 @@
             <script src="path.js" type="text/javascript"></script>
             <script src="functions.js" type="text/javascript"></script>
             
-
+        <style>
+        .equaltd{
+            width:25%;
+        }
+        </style>
     </head>
     <body style="text-align:center;">
         <h3 >pParams - Coding Cup</h3>   
         <div>
-            <button onclick="startOrStop()">Start or Stop</button>    
-        </div> 
-        
+            <button id="startorstop" onclick="startOrStop()">Start Game</button>    
+        </div>         
         <div style="display: flex;">  
-
-            <div  style="min-width:200px;background-color: lightgrey;overflow-y: auto;">
+            <div  style="min-width:200px;background-color: lightgrey;">
                 <div style="text-align:center; font-size:2em;">Korábbi játékok</div>
-                <table id="oldlist" style="width: 100%;">
+                <div id="oldlistcontainer"style="overflow-y: auto;width:100%">
+                    <table id="oldlist" style="width: 100%;">
 
-                </table>
+                    </table>
+                </div>
+                
             </div>
             <div style="flex:1;padding:1em;">
                 <div style="text-align:center;">
-                    <table align="center">
+                    <table align="center" style="width:80%;text-align:center;">
                         <tr>
-                            <th>Thick</th>
-                            <th>Step</th>
-                            <th>Transported</th>
+
+                            <th class="equaltd">Thick</th>
+                            <th class="equaltd">Step</th>
+                            <th class="equaltd">Transported</th>
+                            <th class="equaltd">Life</th>
                         </tr>
                         <tr>
                             <td id="thicknum">0</td>
-                            <td id="stepnum">0</td>
+                            <td id="step">0</td>
                             <td id="transportednum">0</td>
+                            <td id="life">0</td>
                         </tr>
                     </table>                        
                 </div>
@@ -41,9 +49,9 @@
                 <canvas id="canvas"></canvas>                
             </div>
             <div  style="min-width:200px;background-color: lightgrey;overflow-y: auto;text-align:left;">
-                <div style="text-align:center; font-size:2em;">Játék beállítások</div>
-                <div>Step millisec <input type="number" value="100"/></div>
+                <div style="text-align:center; font-size:2em;">Játék beállítások</div>                
                 <div>Térkép méret:<input onchange="mapSizeChanged(this.value)" type="range" min="1" max="30" value="10" id="mapSize"/></div>
+                <div>Step delay millisec:<input type="number" min="0" max="10000" value="100" id="stepdelay"/></div>
             </div>       
         </div> 
     </body>

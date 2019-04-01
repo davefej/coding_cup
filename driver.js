@@ -46,7 +46,7 @@ module.exports = {
         this.transportPassenger();
     },
     passangerTransported(){
-        console.log("Passengers transported: "+car.transported || 0)
+        console.log("Passengers transported: "+ (car.transported || 0))
         currentPassenger = null;
         state = FREE;
     },

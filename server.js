@@ -57,7 +57,7 @@ onJsonMessage = function(data){
     }    
     setTimeout(function(){
         tcp.sendJson(stepData);
-    },200);
+    },50);
 }
 
 function changeDirection(data){
@@ -83,7 +83,11 @@ function cDir(dir){
 }
 function onCloseMessage(){
     fs.writeFileSync("./logs/log_"+GAMNELOG[0].thick.request_id.game_id,JSON.stringify(GAMNELOG));
-    //TODO init
+    setTimeout(function(){
+        if(PENDING_HTTP_RESPS.length > 0){
+            PENDING_HTTP_RESPS.shift().send({end:1});
+        }        
+    },500);    
 }
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))

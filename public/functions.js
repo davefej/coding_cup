@@ -18,32 +18,50 @@ function pollThickFromServer(){
         if(!POLL){
             return;
         }
-        setTimeout(pollThickFromServer,100);
+        var delay = document.getElementById("stepdelay").value;
+        setTimeout(pollThickFromServer,delay);
     }
     $.ajax({
         url: 'wait_for_thick',
         type: 'GET',
         success: function(data){
+            if(data.end){
+                refreshOldGames();
+                console.log("Game finished!");
+                stopGame();
+                return;
+            }
             console.log("---------LÉPÉS "+data.thick.request_id.tick+" -----------");
             console.log(data.thick.cars[0]);
             console.log(data.sent);
             console.log(data.info);
             repeatAfterDelay();
-            drawMap(data.thick);
+            drawMap(data.thick,data.sent.command);
             window.steps.push(data);
         },
-        error: function(data) {
-            console.error(data)
-            repeatAfterDelay();
+        error: function(data) {            
+            console.error("Game finished with error!",data);            
+            refreshOldGames();
+            stopGame();
         }
     });
 }
 
+function stopGame(){
+    POLL = false;
+    window.steps = [];
+    document.getElementById("startorstop").innerHTML = "START";
+}
+
 function startOrStop(){    
-    POLL = !POLL;
-    if(POLL){
+    
+    if(!POLL){
+        document.getElementById("startorstop").innerHTML = "STOP";
+        POLL = true;
         window.steps = [];
-        pollThickFromServer();
+        pollThickFromServer();        
+    }else{
+       stopGame(); 
     }  
     $.ajax({
         url: 'startorstop',
@@ -75,12 +93,16 @@ for(var i = 0; i < mapRows.length; i++){
 
 
 
-function drawMap(thickData){
+function drawMap(thickData,answerCommand){
     GAME.canvasContext.fillStyle = "#ffffff";
     GAME.canvasContext.fillRect(0,0,GAME.gameMatrix[0].length,GAME.gameMatrix.length);
     if (thickData){
         var myCarId = thickData.request_id.car_id;
         GAME.myCar = thickData.cars.find(function(c) {return c.id === myCarId});
+        document.getElementById("thicknum").innerHTML = thickData.request_id.tick;
+        document.getElementById("step").innerHTML = answerCommand;
+        document.getElementById("transportednum").innerHTML = GAME.myCar.transported;
+        document.getElementById("life").innerHTML = GAME.myCar.life;
     }
     // Ha szallitok utast
     if(GAME.myCar && GAME.myCar.passenger_id && thickData.passengers){
@@ -380,6 +402,13 @@ GAME.pathFinder = ngraphPath.aStar(GAME.graph, {
 });
 
 $( document ).ready(function() {
+    refreshOldGames();    
+    mapSizeChanged(10);
+    drawMap();
+});
+
+function refreshOldGames(){
+    document.getElementById("oldlistcontainer").innerHTML = '<table id="oldlist" style="width: 100%;"><tr><th>GameId</th><th>transported</th><th></th></tr></table>';
     $.ajax({
         url: 'loadGames',
         type: 'GET',
@@ -393,11 +422,7 @@ $( document ).ready(function() {
             
         }
     });
-    
-    
-    mapSizeChanged(10);    
-    drawMap();
-});
+}
 
 function createGameDiv(game){
     var container = document.createElement("tr");
@@ -414,10 +439,30 @@ function createGameDiv(game){
     load.innerHTML="Elindít";
     playtd.appendChild(load);
     load.addEventListener("click",function(){
-        //TODO
+        if(game.running){
+            game.running = false;
+        }else{
+            game.running = true;
+            replayNext(game);
+        }        
     });
     container.appendChild(playtd);
 
     document.getElementById("oldlist").appendChild(container);
+}
+
+function replayNext(game){
+    let datas = game.shift();
+    drawMap(datas.thick,datas.step.command);
+    if(game.length > 0){
+        setTimeout(function(){
+            if(!game.running){
+                return;
+            }
+            replayNext(game);
+        },document.getElementById("stepdelay").value);
+    }else{
+        game.running = false;
+    }    
 }
 
