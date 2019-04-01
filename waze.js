@@ -75,7 +75,7 @@ function findAllLinearStreets(from, across){
     }
 }
 
-function isAszfalt(point){
+isAszfalt = function(point){
     point = normalizePoint(point);
     return board.matrix[point.i][point.j] == ASZFALT || board.matrix[point.i][point.j] == ZEBRA;
 }
@@ -114,7 +114,7 @@ function nearestAszfaltIfJarda(point){
     throw Error("Nincs Út a utas mellett");
 }
 
-function normalizePoint(point){
+normalizePoint = function(point){
     if(typeof point.i == "undefined"){
         point.i = point.y
     }

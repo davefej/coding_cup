@@ -1,0 +1,11 @@
+{"cars":[{"life":100,"transported":0,"speed":0,"direction":"UP","command":"0","id":0,"pos":{"x":30,"y":21}}],"passengers":[{"dest_pos":{"x":37,"y":28},"id":16,"pos":{"x":48,"y":9}}],"pedestrians":[{"speed":1,"direction":"UP","command":"0","id":1,"pos":{"x":30,"y":22}}],"request_id":{"game_id":13360,"car_id":0,"tick":0},"messages":[]}
+CAR_INDEX_LEFT
+{"cars":[{"life":100,"transported":0,"speed":0,"direction":"UP","command":"<","id":0,"pos":{"x":30,"y":21}}],"passengers":[{"dest_pos":{"x":37,"y":28},"id":16,"pos":{"x":48,"y":9}}],"pedestrians":[{"speed":1,"direction":"UP","command":"<","id":1,"pos":{"x":30,"y":22}}],"request_id":{"game_id":13360,"car_id":0,"tick":1},"messages":[]}
+ACCELERATION
+{"cars":[{"life":100,"transported":0,"speed":0,"direction":"LEFT","command":"+","id":0,"pos":{"x":30,"y":21}}],"passengers":[{"dest_pos":{"x":37,"y":28},"id":16,"pos":{"x":48,"y":9}}],"pedestrians":[{"speed":1,"direction":"LEFT","command":"0","id":1,"pos":{"x":29,"y":22}}],"request_id":{"game_id":13360,"car_id":0,"tick":2},"messages":[]}
+NO_OP
+{"cars":[{"life":100,"transported":0,"speed":1,"direction":"LEFT","command":"0","id":0,"pos":{"x":29,"y":21}}],"passengers":[{"dest_pos":{"x":37,"y":28},"id":16,"pos":{"x":48,"y":9}}],"pedestrians":[{"speed":1,"direction":"LEFT","command":"0","id":1,"pos":{"x":28,"y":22}}],"request_id":{"game_id":13360,"car_id":0,"tick":3},"messages":[]}
+NO_OP
+{"cars":[{"life":100,"transported":0,"speed":1,"direction":"LEFT","command":"0","id":0,"pos":{"x":28,"y":21}}],"passengers":[{"dest_pos":{"x":37,"y":28},"id":16,"pos":{"x":48,"y":9}}],"pedestrians":[{"speed":1,"direction":"LEFT","command":"0","id":1,"pos":{"x":27,"y":22}}],"request_id":{"game_id":13360,"car_id":0,"tick":4},"messages":[]}
+NO_OP
+{"cars":[{"life":100,"transported":0,"speed":1,"direction":"LEFT","command":"0","id":0,"pos":{"x":27,"y":21}}],"passengers":[{"dest_pos":{"x":37,"y":28},"id":16,"pos":{"x":48,"y":9}}],"pedestrians":[{"speed":1,"direction":"LEFT","command":">","id":1,"pos":{"x":26,"y":22}}],"request_id":{"game_id":13360,"car_id":0,"tick":5},"messages":[]}

@@ -9,14 +9,14 @@ var aktRoute,lastCommand,log;
 GAME = {};
 module.exports  = {
     calculateNextStep(thickData){             
-        driver.updateCar(thickData,lastCommand);
+        driver.updateCar(thickData);
         //console.log(driver.carPos(),driver.carDirection());
         driver.checkStateChange();
         if(driver.free()){
             driver.goForPassenger(dispatcher.nextPassenger(driver.carPos(),thickData.passengers));
         }
         aktRoute = driver.getRoutePoints();
-        let command = driver.calcNextCommand();
+        let command = driver.calcNextCommand(lastCommand);
         log = driver.commandLog();
         lastCommand = command;
         return {

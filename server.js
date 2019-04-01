@@ -3,6 +3,7 @@ const app = express()
 const port = 3000
 const game = require('./game.js')
 const tcp = require('./tcp.js')
+var fs = require("fs");
 var RUNNING = false;
 var PENDING_HTTP_RESPS = [];
 
@@ -28,10 +29,12 @@ app.get('/wait_for_thick', function(req, res){
 });
 
 onJsonMessage = function(data){
+    fs.appendFileSync("./log_"+data.request_id.game_id,JSON.stringify(data)+"\n");
     changeDirection(data);
-    console.log("car passanger:"+data.cars[0].passenger_id);
-    var stepData = game.calculateNextStep(data);     
-    var httpResp = PENDING_HTTP_RESPS.pop();
+//    console.log("car passanger:"+data.cars[0].passenger_id);
+    var stepData = game.calculateNextStep(data);
+    fs.appendFileSync("./log_"+data.request_id.game_id,stepData.command+"\n");
+    var httpResp = PENDING_HTTP_RESPS.shift();
     if(httpResp  && !httpResp.finished){
         httpResp.send({
             thick:data,
@@ -43,10 +46,10 @@ onJsonMessage = function(data){
     //timeout, not to kill local TCP socket with infinite running
     setTimeout(function(){
         if(tcp.sendJson(stepData)){
-            console.log("STEP COMMAND SENT:",stepData.response_id.tick);
+ //           console.log("STEP COMMAND SENT:",stepData.response_id.tick);
             
         }
-    },100);
+    },200);
 }
 
 function changeDirection(data){
