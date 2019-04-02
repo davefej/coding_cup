@@ -11,6 +11,9 @@ module.exports  = {
                 findAllLinearStreets({i:i,j:j});
             }
         }
+        addMagicPoints();
+
+
         pathFinder = ngraphPath.aStar(graph, {
             distance(fromNode, toNode, link) {
               return link.data.weight;
@@ -122,4 +125,30 @@ normalizePoint = function(point){
         point.j = point.x
     }   
     return point;
+}
+
+function addMagicPoints(){
+    for(var i = 2; i <=3; i++){
+        for(var j = 2; j <= 3; j++){
+            graph.addLink(i+":"+j,(59-i)+":"+j,{weight:calcMagicWeight(i,j)});
+            graph.addLink(i+":"+j,i+":"+(59-j),{weight:calcMagicWeight(i,j)});
+            graph.addLink((59-i)+":"+j,i+":"+j,{weight:calcMagicWeight(i,j)});
+            graph.addLink(i+":"+(59-j),i+":"+j,{weight:calcMagicWeight(i,j)});
+
+            graph.addLink((59-i)+":"+(59-j),(59-i)+":"+j,{weight:calcMagicWeight(i,j)});
+            graph.addLink((59-i)+":"+(59-j),i+":"+(59-j),{weight:calcMagicWeight(i,j)});
+            graph.addLink((59-i)+":"+j,(59-i)+":"+(59-j),{weight:calcMagicWeight(i,j)});
+            graph.addLink(i+":"+(59-j),(59-i)+":"+(59-j),{weight:calcMagicWeight(i,j)});
+
+        }
+    }
+}
+function calcMagicWeight(i,j){
+    if(i==j){
+        return 5;
+    }
+    if(Math.abs(i-j)==1){
+        return 6;
+    }
+    return 7;
 }

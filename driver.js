@@ -161,6 +161,12 @@ module.exports = {
                 //meg fogunk állni
                 return NO_OP;
             }else{
+
+
+                if(isMagicPoints(toNode,nextNode)){
+                    console.warn("Magic Points");
+                }
+
                 if(distanceToNode == 1){
                     if(nextNode){                        
                         //rotation
@@ -195,6 +201,15 @@ module.exports = {
         }
     }
 };
+
+function isMagicPoints(point1,point2){
+    if(point1 == 2 || point1 == 3 || point1 == 56 || point1 == 57){
+        if(point2 == 2 || point2 == 3 || point2 == 56 || point2 == 57){
+            return true;
+        }
+    }
+    return false;
+}
 
 function isSamepos(pos1,pos2){
     return pos1.x == pos2.x && pos1.y == pos2.y;
@@ -234,6 +249,21 @@ function calculateDirection(from,to){
         x:parseInt(to.x),
         y:parseInt(to.y)
     };
+
+
+    if(calcPointsDistance(from,to) > 52){
+        if(from.x > to.x){
+            return RIGHT;
+        }else if(from.x < to.x){
+            return LEFT;
+        }else if(from.y < to.y){
+            return UP;
+        }else if(from.y > to.y){
+            return DOWN;
+        }    
+    }
+
+
     if(from.x > to.x){
         return LEFT;
     }else if(from.x < to.x){
@@ -305,17 +335,29 @@ function futureNO_OP(car){
     switch(car.direction){
         case UP:
             car.pos.y = car.pos.y-car.speed
-            return;
+            break;
         case DOWN:
             car.pos.y = car.pos.y+car.speed
-            return;
+            break;
         case LEFT:
             car.pos.x = car.pos.x-car.speed
-            return;
+            break;
         case RIGHT:
             car.pos.x = car.pos.x+car.speed
-            return;
+            break; 
     }
+
+    if(car.pos.x > 59 ){
+        car.pos.x = car.pos.x - 60;        
+    }else if(car.pos.x < 0){
+        car.pos.x = 60 + car.pos.x;
+    }
+    if(car.pos.y > 59 ){
+        car.pos.y = car.pos.y - 59;
+    }else if(car.pos.y < 0){
+        car.pos.y = 60 + car.pos.y;
+    }
+    return;
 }
 
 function turnDirectionFromCommandAndDirection(direction,command){
