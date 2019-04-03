@@ -104,7 +104,8 @@ module.exports = {
             throw Error("Calculate command in free state");
         }
         if(!isAszfalt(futureCar.pos)){
-            throw Error("Future Pos nem aszfalt");
+            console.warn("Future Pos nem aszfalt")
+            //throw Error("Future Pos nem aszfalt");
         }
         if(isSamepos(futureCar.pos,routePoints[0])){
             routePoints.shift();
@@ -203,8 +204,12 @@ module.exports = {
 };
 
 function isMagicPoints(point1,point2){
-    if(point1 == 2 || point1 == 3 || point1 == 56 || point1 == 57){
-        if(point2 == 2 || point2 == 3 || point2 == 56 || point2 == 57){
+    return isMagicPoint(point1) && isMagicPoint(point2);
+}
+
+function isMagicPoint(point){
+    if(point.x == 2 || point.x == 3 || point.x == 56 || point.x == 57){
+        if(point.y == 2 || point.y == 3 || point.y == 56 || point.y == 57){
             return true;
         }
     }
@@ -278,9 +283,17 @@ function calculateDirection(from,to){
 }
 
 function calcPointsDistance(a,b){
+    
     a.x = a.x || a.j;
     b.y = b.y || b.i;
-    return Math.abs(a.x-b.x) + Math.abs(a.y-b.y);
+
+    if(isMagicPoints(a,b)){
+        console.warn("Magin point distance calculation")
+        return 60 - Math.abs(a.x-b.x) + Math.abs(a.y-b.y);
+    }else{
+        return Math.abs(a.x-b.x) + Math.abs(a.y-b.y);
+    }
+    
 }
 
 function formatNodeList(nodes){
@@ -401,3 +414,4 @@ function turnAzonnaliCommandFromDirections(lastDirection,nextDirection){
         throw Error("180 as azonnalit nem adhatunk ki")
     }
 }
+

@@ -12,7 +12,7 @@ module.exports  = {
             }
         }
         addMagicPoints();
-
+        addAllJárdaNextToAszfalt();
 
         pathFinder = ngraphPath.aStar(graph, {
             distance(fromNode, toNode, link) {
@@ -83,6 +83,16 @@ isAszfalt = function(point){
     return board.matrix[point.i][point.j] == ASZFALT || board.matrix[point.i][point.j] == ZEBRA;
 }
 
+isJarda = function(point){
+    point = normalizePoint(point);
+    try{
+        return board.matrix[point.i][point.j] == JÁRDA;
+    }catch(e){
+        console.warn("Outofbound JÁRDA")
+        return false;
+    }    
+}
+
 function calcWeight(from,dest,distance){
     if(distance > 5){
         return 5 + Math.floor((distance-5) / 3)
@@ -107,6 +117,21 @@ function nearestAszfaltIfJarda(point){
     if(isAszfalt({x:point.x, y:point.y-1})){
         return {x:point.x, y:point.y-1}
     }
+
+    if(isNextToAszfalt({x:point.x+1,y:point.y})){
+        return {x:point.x+1, y:point.y}
+    }
+    if(isNextToAszfalt({x:point.x-1, y:point.y})){
+        return {x:point.x-1, y:point.y}
+    }
+    if(isNextToAszfalt({x:point.x, y:point.y+1})){
+        return {x:point.x, y:point.y+1}
+    }
+    if(isNextToAszfalt({x:point.x, y:point.y-1})){
+        return {x:point.x, y:point.y-1}
+    }
+    
+/*
     for(var x = -1; x <=1; x++){
         for(var y = -1; y <=1; y++){
             if(isAszfalt({x:point.x+x, y:point.y+y})){
@@ -114,6 +139,7 @@ function nearestAszfaltIfJarda(point){
             }
         }
     }
+*/
     throw Error("Nincs Út a utas mellett");
 }
 
@@ -151,4 +177,44 @@ function calcMagicWeight(i,j){
         return 6;
     }
     return 7;
+}
+
+function addAllJárdaNextToAszfalt(){
+    for(var i = 0; i < board.matrix.length; i++){
+        for(var j = 0; j < board.matrix.length; j++){
+            if(isAszfalt({i:i,j:j})){
+                if(isJarda({i:i,j:j+1})){
+                    graph.addLink(i+":"+j,i+":"+(j+1),{weight:100});
+                    graph.addLink(i+":"+(j+1),i+":"+j,{weight:100});
+                }
+                if(isJarda({i:i,j:j-1})){
+                    graph.addLink(i+":"+j,i+":"+(j-1),{weight:100});
+                    graph.addLink(i+":"+(j-1),i+":"+j,{weight:100});
+                }
+                if(isJarda({i:i+1,j:j})){
+                    graph.addLink(i+":"+j,(i+1)+":"+j,{weight:100});
+                    graph.addLink((i+1)+":"+j,i+":"+j,{weight:100});
+                }
+                if(isJarda({i:i-1,j:j})){
+                    graph.addLink(i+":"+j,(i-1)+":"+j,{weight:100});
+                    graph.addLink((i-1)+":"+j,i+":"+j,{weight:100});
+                }
+            }
+        }
+    }
+}
+function isNextToAszfalt(point){
+    if(isAszfalt({x:point.x+1,y:point.y})){
+        return true;
+    }
+    if(isAszfalt({x:point.x-1, y:point.y})){
+        return true;
+    }
+    if(isAszfalt({x:point.x, y:point.y+1})){
+        return true;
+    }
+    if(isAszfalt({x:point.x, y:point.y-1})){
+        return true;
+    }
+    return false;
 }
