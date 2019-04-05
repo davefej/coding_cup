@@ -1,15 +1,14 @@
 const net = require('net');
 var split = require('split');
+var fs = require('fs');
+
 var client;
 
-// var IP = '127.0.0.1';
-// var PORT = 1337;
-
-var IP = '31.46.64.35';
-var PORT = 12323;
+const local = true;
+var IP = local ? '127.0.0.1' : '31.46.64.35';
+var PORT = local ? 1337 : 12323;
 
 var server;
-var dev_server_thick_id;
 
 module.exports = {
     connect(onMessage,onClose){
@@ -19,8 +18,8 @@ module.exports = {
         client.connect(PORT, IP, function() {
             console.log('TCP Client Connected sucessfully');
         });
-        client.on('data', function(data) {            
-            onMessage(JSON.parse(data.toString()));            
+        client.on('data', function(data) {
+            onMessage(JSON.parse(data.toString()));
         });        
         client.on('close', function() {            
             console.error("Connection closed!");
@@ -43,16 +42,25 @@ module.exports = {
 };
 
 
-var gameId = 1;
-var car_id = 1;
-let firstReqest = true;
+/**
+ * LOCAL TCP SERVER JUST FOR TESTING
+ */
 function createServer(){
-/***** LOCAL TCP SERVER JUST FOR TESTING *******/
-    gameId++;
-    car_id++;
     if(IP == '127.0.0.1' && server == undefined){             
         
-        server = net.createServer(function(socket) {                           
+        /**
+         * Load a saved game
+         */
+        let firstReqest = true;
+        const gameLogFile='./logs/log_13639';
+        var savedTicks = JSON.parse(fs.readFileSync(gameLogFile));
+        const fakeGameId = Math.floor(Math.random()*1e8 + 1e7);
+        for(var data of savedTicks){
+            data.thick.request_id.game_id = fakeGameId;
+        }
+
+        server = net.createServer(function(socket) {     
+            var tickIdx = 0;                      
             socket.on('data', function(data) {
                 var requestData = JSON.parse(data.toString());                
                 if(firstReqest && !requestData.token){                
@@ -60,49 +68,17 @@ function createServer(){
                         messages:["NOT_SENT_TOKEN"]
                     }));
                     console.error("Initial request without token");
+                }else if (tickIdx == savedTicks.length){
+                    socket.write(JSON.stringify({
+                        messages: ["END_OF_DATA"]
+                    }));
                 }else{
                     if(firstReqest){
                         firstReqest = false;
-                    }else if(requestData.response_id.tick != dev_server_thick_id){
-                        console.error("Thick Id not equal",dev_server_thick_id,requestData.thick);
                     }
-                    socket.write(JSON.stringify({
-                        "request_id": {
-                          "game_id": gameId,
-                          "tick": ++dev_server_thick_id,
-                          "car_id": car_id
-                        },
-                        "cars": [
-                          {
-                            "id": car_id,
-                            "pos": {"x": 14, "y": 15},
-                            "life": 100,
-                            "speed": 0,
-                            "direction": "v",
-                            "next_command": "+",
-                            "transported": "100",
-                            "passenger_id": "1"
-                          }
-                        ],
-                        "pedestrians": [
-                          {
-                            "id": 100,
-                            "pos": {"x": 10, "y": 10},
-                            "speed": 1,
-                            "direction": ">",
-                            "next_command": "+"
-                          }, 
-                        ],
-                        "passengers": [
-                          {
-                            "id": 101,
-                            "pos": {"x": 28, "y": 30},
-                            "dest_pos": {"x": 58, "y": 2},
-                            "car_id":car_id
-                          }
-                        ],
-                        "messages": []
-                      }));     
+
+                    //console.log('Sending tick:\n' + JSON.stringify(savedTicks[tickIdx].thick, null, 2));
+                    socket.write(JSON.stringify(savedTicks[tickIdx++].thick));
                 }
                 socket.pipe(split());
             });

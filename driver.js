@@ -70,7 +70,7 @@ module.exports = {
             if(car.passenger_id == currentPassenger.id){
                 this.passengerPicked();
             }else{
-                throw Error("Wrong passanger picked! "+car.passenger_id+" "+currentPassenger.id);
+                throw Error("Wrong passanger picked! " + car.passenger_id + " " + currentPassenger.id);
             }            
         }else{
             if(this.isWaitingOut() && !car.passenger_id){

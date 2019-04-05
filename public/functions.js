@@ -25,6 +25,7 @@ function pollThickFromServer(){
         url: 'wait_for_thick',
         type: 'GET',
         success: function(data){
+            //console.log("Got data from server: \n"+JSON.stringify(data, null, 2));
             if(data.end){
                 refreshOldGames();
                 console.log("Game finished!");

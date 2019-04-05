@@ -57,7 +57,7 @@ onJsonMessage = function(data){
     }    
     setTimeout(function(){
         tcp.sendJson(stepData);
-    },150);
+    },100);
 }
 
 function changeDirection(data){
@@ -79,6 +79,8 @@ function cDir(dir){
             return LEFT;
         case "UP":
             return UP;
+        default: 
+            return dir;
     }
 }
 function onCloseMessage(){
