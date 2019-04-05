@@ -411,7 +411,7 @@ function addRotations(board){
                 isAszfalt(pointFromIJ(i+1,j)) &&
                 isAszfalt(pointFromIJ(i+1,j+1)) &&
                 isAszfalt(pointFromIJ(i+1,j+2))){
-                    addHorizontalRotations(i,j);
+                    addVerticalRotations(i,j);
             }
         }
     }
@@ -421,12 +421,20 @@ function addHorizontalRotations(i,j){
     graph.addLink(i+":"+j,i+":"+(j+1),{weight:2});
     graph.addLink((i+1)+":"+j,(i+1)+":"+(j+1),{weight:2});
     graph.addLink((i+2)+":"+j,(i+2)+":"+(j+1),{weight:2});
+
+    graph.addLink(i+":"+(j+1),i+":"+j,{weight:2});
+    graph.addLink((i+1)+":"+(j+1),(i+1)+":"+j,{weight:2});
+    graph.addLink((i+2)+":"+(j+1),(i+2)+":"+j,{weight:2});
 }
 
 function addVerticalRotations(i,j){
     graph.addLink(i+":"+j,(i+1)+":"+j,{weight:2});
     graph.addLink(i+":"+(j+1),(i+1)+":"+(j+1),{weight:2});
     graph.addLink(i+":"+(j+2),(i+1)+":"+(j+2),{weight:2});
+
+    graph.addLink((i+1)+":"+j,i+":"+j,{weight:2});
+    graph.addLink((i+1)+":"+(j+1),i+":"+(j+1),{weight:2});
+    graph.addLink((i+1)+":"+(j+2),i+":"+(j+2),{weight:2});
 }
 
 function pointFromIJ(i,j){
