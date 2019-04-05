@@ -1,10 +1,16 @@
-let ngraphPath = require('ngraph.path');
-let createGraph = require('ngraph.graph');
+ngraphPath = require('ngraph.path');
+createGraph = require('ngraph.graph');
+board = null;
+graph = null;
+pathFinder = null;
+NEW = true;
 
-var board,graph,pathFinder,built = false;
 module.exports  = {
     build(brd){
         board = brd;
+        if(NEW){
+            return buildGraph(board);
+        }
         graph = createGraph();
         for(var i = 0; i < board.matrix.length; i++){
             for(var j = 0; j < board.matrix.length; j++){
@@ -217,4 +223,7 @@ function isNextToAszfalt(point){
         return true;
     }
     return false;
+}
+if(NEW){
+require('./public/common.js');
 }
