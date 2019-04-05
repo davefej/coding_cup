@@ -115,27 +115,28 @@ function drawMap(thickData,answerCommand){
         for(var colIdx = 0; colIdx < GAME.gameMatrix[rowIdx].length; colIdx++){
             GAME.canvasContext.fillStyle = getColorByField(GAME.gameMatrix[rowIdx][colIdx]);
             GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
-            if(GAME.myCar){
-                if (isSeen({x: colIdx, y: rowIdx}, GAME.myCar)) {
-                    GAME.canvasContext.fillStyle = "#FF000088";
-                    GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
-                }
-                
-                // Draw an arrow
-                GAME.canvasContext.fillStyle = "#FFFF00";
-                fromx = GAME.myCar.pos.x*GAME.mapRatio;
-                fromy = GAME.myCar.pos.y*GAME.mapRatio;
-                tox = GAME.mapRatio*normals[GAME.myCar.direction].x + fromx;
-                toy = GAME.mapRatio*normals[GAME.myCar.direction].y + fromy;
-                canvas_arrow(GAME.canvasContext, fromx + 0.5*GAME.mapRatio, fromy + 0.5*GAME.mapRatio, tox + 0.5*GAME.mapRatio, toy + 0.5*GAME.mapRatio, 5);
+        }
+    }
+    if(GAME.myCar){
+        GAME.canvasContext.fillStyle = "#2196F388";
+        GAME.canvasContext.fillRect(GAME.myCar.pos.x*GAME.mapRatio,GAME.myCar.pos.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
 
-                // Draw passenger destinations
-                if(GAME.myPassenger){
-                    GAME.canvasContext.fillStyle = "#0000FF";
-                    GAME.canvasContext.fillRect(GAME.myPassenger.dest_pos.x*GAME.mapRatio,
-                        GAME.myPassenger.dest_pos.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
-                }
-            }
+        for(let point of mapCoordsSeenByCar(GAME.myCar)){
+            GAME.canvasContext.fillStyle = "#FF000088";
+            GAME.canvasContext.fillRect(point.x*GAME.mapRatio, point.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+        }
+        // Draw an arrow
+        GAME.canvasContext.fillStyle = "#FFFF00";
+        fromx = GAME.myCar.pos.x*GAME.mapRatio;
+        fromy = GAME.myCar.pos.y*GAME.mapRatio;
+        tox = GAME.mapRatio*normals[GAME.myCar.direction].x + fromx;
+        toy = GAME.mapRatio*normals[GAME.myCar.direction].y + fromy;
+        canvas_arrow(GAME.canvasContext, fromx + 0.5*GAME.mapRatio, fromy + 0.5*GAME.mapRatio, tox + 0.5*GAME.mapRatio, toy + 0.5*GAME.mapRatio, 5);
+
+        // Draw passenger destinations
+        if(GAME.myPassenger){
+            GAME.canvasContext.fillStyle = "#0000FF";
+            GAME.canvasContext.fillRect(GAME.myPassenger.dest_pos.x*GAME.mapRatio, GAME.myPassenger.dest_pos.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
         }
     }
     if(thickData){
@@ -148,8 +149,23 @@ function drawMap(thickData,answerCommand){
             GAME.canvasContext.fillRect(passanger.pos.x*GAME.mapRatio,passanger.pos.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
         });
         thickData.cars.forEach(car => {
-            GAME.canvasContext.fillStyle = "#2196F388";
-            GAME.canvasContext.fillRect(car.pos.x*GAME.mapRatio,car.pos.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+            if(GAME.myCar && car.id != GAME.myCar.id){
+                for(let point of mapCoordsSeenByCar(car)){
+                    GAME.canvasContext.fillStyle = "#FFFF0077";
+                    GAME.canvasContext.fillRect(point.x*GAME.mapRatio, point.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+                }
+                
+                // Draw an arrow
+                GAME.canvasContext.fillStyle = "#FF00AA";
+                fromx = car.pos.x*GAME.mapRatio;
+                fromy = car.pos.y*GAME.mapRatio;
+                tox = GAME.mapRatio*normals[car.direction].x + fromx;
+                toy = GAME.mapRatio*normals[car.direction].y + fromy;
+                canvas_arrow(GAME.canvasContext, fromx + 0.5*GAME.mapRatio, fromy + 0.5*GAME.mapRatio, tox + 0.5*GAME.mapRatio, toy + 0.5*GAME.mapRatio, 5);
+                
+                GAME.canvasContext.fillStyle = "#2196F388";
+                GAME.canvasContext.fillRect(car.pos.x*GAME.mapRatio,car.pos.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+            }
         });
     }
     
@@ -228,7 +244,7 @@ function calcWeight(from,dest,distance){
 }
 
 /**
- * Area seen by the car 
+ * COLLISION DETECTION LOGIC
  */
 var viewArea = [
     "         ",
@@ -329,6 +345,7 @@ var normals = {
     '<': {x: -1, y: 0},
     'v': {x: 0, y: 1}
 };
+
 function canvas_arrow(context, fromx, fromy, tox, toy, r){
     var x_center = tox;
     var y_center = toy;
@@ -389,6 +406,8 @@ function simulateCarPos(carCoords, carDir, GAME){
 function canCollide(pedestrian, car){
     return isSeen(pedestrian.pos, car);
 }
+/** END OF COLLISION DETECTION */
+
 
 for(var i = 0; i < GAME.gameMatrix.length; i++){
     for(var j = 0; j < GAME.gameMatrix[i].length; j++){
