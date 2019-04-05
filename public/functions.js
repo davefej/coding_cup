@@ -37,8 +37,20 @@ function pollThickFromServer(){
             console.log(data.sent);
             console.log(data.info);
             repeatAfterDelay();
-            drawMap(data.thick,data.sent.command);
+            drawMap(data.thick, data.sent.command, data.info.route);
             window.steps.push(data);
+
+            /**
+             * Test car collision logic
+             */
+            if (GAME.myCar && data.thick){
+                var danger = isDangerV1(GAME.myCar, data.thick)
+                if(danger){
+                    console.log("Danger: \n"+ JSON.stringify(danger, null, 2));
+                    stopGame();
+                    alert("isDangerV1");
+                }
+            }
         },
         error: function(data) {            
             console.error("Game finished with error!",data);            
@@ -94,7 +106,7 @@ for(var i = 0; i < mapRows.length; i++){
 
 
 
-function drawMap(thickData,answerCommand){
+function drawMap(thickData, answerCommand, route){
     GAME.canvasContext.fillStyle = "#ffffff";
     GAME.canvasContext.fillRect(0,0,GAME.gameMatrix[0].length,GAME.gameMatrix.length);
     if (thickData){
@@ -168,7 +180,22 @@ function drawMap(thickData,answerCommand){
             }
         });
     }
-    
+    if(route && route.length >=2){
+        GAME.canvasContext.lineWidth = 10;
+        GAME.canvasContext.strokeStyle = "#0000FF88";
+        b  = GAME.mapRatio/2;
+        GAME.canvasContext.beginPath();
+        GAME.canvasContext.moveTo(GAME.myCar.pos.x*GAME.mapRatio + b, GAME.myCar.pos.y*GAME.mapRatio + b);
+        GAME.canvasContext.lineTo(route[0].x*GAME.mapRatio + b, route[0].y*GAME.mapRatio + b);
+        GAME.canvasContext.stroke();
+        for(var k=0; k<route.length-1; k++){
+            b  = GAME.mapRatio/2;
+            GAME.canvasContext.beginPath();
+            GAME.canvasContext.moveTo(route[k].x*GAME.mapRatio + b, route[k].y*GAME.mapRatio + b);
+            GAME.canvasContext.lineTo(route[k+1].x*GAME.mapRatio + b, route[k+1].y*GAME.mapRatio + b);
+            GAME.canvasContext.stroke();
+        }
+    }
 }
 
 function getColorByField(field){
@@ -237,7 +264,7 @@ function isAszfalt(point){
 
 function calcWeight(from,dest,distance){
     if(distance > 5){
-        return 5 + Math.floor((distance-5) / 3)
+        return distance;//5 + Math.floor((distance-5) / 2)
     }else{
         return distance;
     }
@@ -379,32 +406,219 @@ function canvas_arrow(context, fromx, fromy, tox, toy, r){
     context.fill();
 }
 
-function simulateCarPos(carCoords, carDir, GAME){
-    
-    for(var rowIdx = 0; rowIdx < GAME.gameMatrix.length; rowIdx++){
-        for(var colIdx = 0; colIdx < GAME.gameMatrix[rowIdx].length; colIdx++){
-            if (isSeen({x: colIdx, y: rowIdx}, {pos: carCoords, direction: carDir})){
-                GAME.canvasContext.fillStyle = "#FF0000AA";
-                GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
-            }
-            if (colIdx === carCoords.x && rowIdx === carCoords.y){
-                GAME.canvasContext.fillStyle = "#0000FF99";
-                GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
-                
-                // Draw an arrow
-                GAME.canvasContext.fillStyle = "#FFFF00";
-                fromx = colIdx*GAME.mapRatio;
-                fromy = rowIdx*GAME.mapRatio;
-                tox = GAME.mapRatio*normals[carDir].x + fromx;
-                toy = GAME.mapRatio*normals[carDir].y + fromy;
-                canvas_arrow(GAME.canvasContext, fromx + 0.5*GAME.mapRatio, fromy + 0.5*GAME.mapRatio, tox + 0.5*GAME.mapRatio, toy + 0.5*GAME.mapRatio, 5);
-            }
+function isDangerV1(myCar, tickData){
+    /**
+     * Iterate over all the points, I can see. 
+     * If pedestrian or car can be seen then check if collision is possible by calculating the relative velocity
+     * If the collision is possible return true
+     */
+    var carsSeen = [];
+    var pedestriansSeen = [];
+    var pointsSeen = mapCoordsSeenByCar(myCar);
+
+    var colliding = undefined;
+
+    for(let p of pointsSeen){
+      for(let car of tickData.cars){
+           if (car.pos.x === p.x && car.pos.y === p.y){
+               carsSeen.push(car);
+           }
+       }
+       for(let ped of tickData.pedestrians){
+           if (ped.pos.x === p.x && ped.pos.y === p.y){
+               pedestriansSeen.push(ped);
+           }
+       }
+    }
+
+    var normals = {
+        '^': {x: 0, y: -1},
+        '>': {x: 1, y: 0},
+        '<': {x: -1, y: 0},
+        'v': {x: 0, y: 1}
+    };
+
+    for(let obj of carsSeen){
+        // calculate relative speed
+        var dv = {
+            x: obj.speed*normals[obj.direction].x - myCar.speed*normals[myCar.direction].x,
+            y: obj.speed*normals[obj.direction].y - myCar.speed*normals[myCar.direction].y
+        };
+        
+        // calculate relative position
+        dx = obj.pos.x - myCar.pos.x;
+        dy = obj.pos.y - myCar.pos.y;
+
+        // Calculate relative speed in polar coordinates:
+        // https://math.stackexchange.com/a/2444977/263118
+        dvr = (dx*dv.x + dy*dv.y)/Math.sqrt(1e-6 + dx*dx + dy*dy);
+        dvtheta = (dx*dv.y - dv.x*dy)/(1e-3 + dx*dx + dy*dy);
+
+        if( (dv.x < 0 && dv.y < 0) || (dx == 0 && dv.y < 0) || (dv.x < 0 && dy == 0) || dvr < 0 ){
+            colliding = {
+                car: myCar,
+                objectType: 'car',
+                object: obj,
+                dv: {dvr: dvr, dvtheta: dvtheta, dvx: dv.x, dvy: dv.y}
+            };
+            return colliding;
         }
     }
+
+    /*
+    for(let obj of pedestriansSeen){
+        // calculate relative speed
+        var dv = {
+            x: obj.speed*normals[obj.direction].x - myCar.speed*normals[myCar.direction].x,
+            y: obj.speed*normals[obj.direction].y - myCar.speed*normals[myCar.direction].y
+        };
+        
+        // calculate relative position
+        dx = obj.pos.x - myCar.pos.x;
+        dy = obj.pos.y - myCar.pos.y;
+
+        // Calculate relative speed in polar coordinates:
+        // https://math.stackexchange.com/a/2444977/263118
+        dvr = (dx*dv.x + dy*dv.y)/Math.sqrt(1e-6 + dx*dx + dy*dy);
+        dvtheta = (dx*dv.y - dv.x*dy)/(1e-3 + dx*dx + dy*dy);
+
+        if(dvr<0){
+            colliding = {
+                car: myCar,
+                objectType: 'pedestrian',
+                object: obj,
+                dv: {dvr: dvr, dvtheta: dvtheta, dvx: dv.x, dvy: dv.y}
+            };
+            return colliding;
+        }
+    }
+    */
+    return colliding;
 }
 
-function canCollide(pedestrian, car){
-    return isSeen(pedestrian.pos, car);
+function isDangerV2(myCar, tickData){
+   var FuturePosCalculator = {
+    futurePos: (obj) => {
+        var obj = JSON.parse(JSON.stringify(obj));
+        var futurePos = undefined;
+
+        switch(obj.command){
+            case NO_OP:
+                futurePos = FuturePosCalculator.futureNO_OP(obj);
+                break;
+            case ACCELERATION:
+                obj.speed += 1;
+                futurePos = FuturePosCalculator.futureNO_OP(obj);
+                break;
+            case DECELERATION:
+                obj.speed -= 1;
+                futurePos = FuturePosCalculator.futureNO_OP(obj);
+                break;
+            case CAR_INDEX_LEFT:
+                futurePos = FuturePosCalculator.futureNO_OP(obj);
+                obj.direction =  FuturePosCalculator.turnDirectionFromCommandAndDirection(obj.direction,CAR_INDEX_LEFT);
+                break;
+            case CAR_INDEX_RIGHT:
+                futurePos = FuturePosCalculator.futureNO_OP(obj);
+                obj.direction =  FuturePosCalculator.turnDirectionFromCommandAndDirection(obj.direction,CAR_INDEX_RIGHT);
+                break;
+            case CLEAR:            
+                break;
+            case FULL_THROTTLE:
+                break;
+            case EMERGENCY_BRAKE:
+                break;
+            case GO_LEFT:
+                break;
+            case GO_RIGHT:
+                break;
+        }
+        return car;
+    },
+    futureNO_OP: (obj) => {
+        fpos = {x: obj.pos.x, y: obj.pos.y};
+        switch(obj.direction){
+            case UP:
+                fpos.y = obj.pos.y-obj.speed;
+                break;
+            case DOWN:
+                fpos.y = obj.pos.y+obj.speed
+                break;
+            case LEFT:
+                fpos.x = obj.pos.x-obj.speed
+                break;
+            case RIGHT:
+                fpos.x = obj.pos.x+obj.speed
+                break; 
+        }
+    
+        if(obj.pos.x > 59 ){
+            fpos.x = obj.pos.x - 60;        
+        }else if(obj.pos.x < 0){
+            fpos.x = 60 + obj.pos.x;
+        }
+        if(obj.pos.y > 59 ){
+            fpos.y = obj.pos.y - 59;
+        }else if(obj.pos.y < 0){
+            fpos.y = 60 + obj.pos.y;
+        }
+        return fpos;
+    },
+    turnDirectionFromCommandAndDirection: (direction,command) => {
+        if(direction == UP && command == CAR_INDEX_LEFT){
+            return LEFT;
+        }else if(direction == LEFT && command == CAR_INDEX_LEFT){
+            return DOWN;
+        }else if(direction == DOWN && command == CAR_INDEX_LEFT){
+            return RIGHT;
+        }else if(direction == RIGHT && command == CAR_INDEX_LEFT){
+            return UP;
+        }else if(direction == UP && command == CAR_INDEX_RIGHT){
+            return RIGHT;
+        }else if(direction == LEFT && command == CAR_INDEX_RIGHT){
+            return UP;
+        }else if(direction == DOWN && command == CAR_INDEX_RIGHT){
+            return LEFT;
+        }else if(direction == RIGHT && command == CAR_INDEX_RIGHT){
+            return DOWN;
+        }
+    }
+   };
+
+   /**
+     * Iterate over all the points, I can see. 
+     * If pedestrian or car can be seen then check if collision is possible by calculating the relative velocity
+     * If the collision is possible return true
+     */
+    var carsSeen = [];
+    var pedestriansSeen = [];
+    var pointsSeen = mapCoordsSeenByCar(myCar);
+
+    var colliding = undefined;
+
+    for(let p of pointsSeen){
+      for(let car of tickData.cars){
+           if (car.pos.x === p.x && car.pos.y === p.y){
+               carsSeen.push(car);
+           }
+       }
+       for(let ped of tickData.pedestrians){
+           if (ped.pos.x === p.x && ped.pos.y === p.y){
+               pedestriansSeen.push(ped);
+           }
+       }
+    }
+
+    fpos_myCar = FuturePosCalculator(myCar);
+    dx_myCar = fpos_myCar.x - myCar.pos.x;
+    dy_myCar = fpos_myCar.y - myCar.pos.y;
+
+    for(let car of carsSeen){
+        fpos_object = FuturePosCalculator(car);
+        
+        dx_object = fpos_object.x - car.pos.x;
+        dy_object = fpos_object.y - car.pos.y;
+    }
 }
 /** END OF COLLISION DETECTION */
 
@@ -486,3 +700,12 @@ function replayNext(game){
     }    
 }
 
+// var F = {
+//     killMe: () => {
+//         var me = 3;
+//         return F.killSomeone(me);
+//     },
+//     killSomeone: (n) => {
+//         return n+1;
+//     }
+// };

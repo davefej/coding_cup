@@ -52,12 +52,19 @@ function createServer(){
          * Load a saved game
          */
         let firstReqest = true;
-        const gameLogFile='./logs/log_13639';
+        const gameLogFile='./logs/log_17532';
         var savedTicks = JSON.parse(fs.readFileSync(gameLogFile));
         
         const fakeGameId = Math.floor(Math.random()*1e8 + 1e7);
         for(var data of savedTicks){
             data.thick.request_id.game_id = fakeGameId;
+        }
+
+        /** set futureCar to undefined */
+        for(var data of savedTicks){
+            for(var car of data.thick.cars){
+                car.futureCar = undefined;
+            }
         }
 
         /**
@@ -66,7 +73,8 @@ function createServer(){
         function addFakeCars(thick){
             fakeCars = [{id: -1, pos: {x: 2, y: 1}, direction: 'v', speed:0},
                         {id: -2, pos: {x: 51, y: 35}, direction: '^', speed:0},
-                        {id: -3, pos: {x: 15, y: 52}, direction: '>', speed:0}];
+                        {id: -3, pos: {x: 15, y: 52}, direction: '>', speed:0},
+                        {id: -4, pos: {x: 3, y: 45}, direction: '^', speed:0}];
             
             for(let car of fakeCars){
                 thick.cars.push(car);

@@ -44,7 +44,8 @@ onJsonMessage = function(data){
     var stepData = game.calculateNextStep(data);
     GAMNELOG.push({
         thick:data,
-        step:stepData
+        step:stepData,
+        route: game.getInfo().route
     });
     var httpResp = PENDING_HTTP_RESPS.shift();
     if(httpResp  && !httpResp.finished){
