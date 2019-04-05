@@ -1,10 +1,23 @@
-let ngraphPath = require('ngraph.path');
-let createGraph = require('ngraph.graph');
+ngraphPath = require('ngraph.path');
+createGraph = require('ngraph.graph');
 
-var board,graph,pathFinder,built = false;
+NEW = true;
+if(NEW){
+    require("./public/common.js")
+}
+
+board = null;
+graph  = null;
+pathFinder = null;
+built = false;
 module.exports  = {
     build(brd){
         board = brd;
+
+        if(NEW){
+            buildGraph(board);
+            return;
+        }
         graph = createGraph();
         for(var i = 0; i < board.matrix.length; i++){
             for(var j = 0; j < board.matrix.length; j++){
@@ -77,7 +90,11 @@ function findAllLinearStreets(from, across){
 
 isAszfalt = function(point){
     point = normalizePoint(point);
-    return board.matrix[point.i][point.j] == ASZFALT || board.matrix[point.i][point.j] == ZEBRA;
+    try{
+        return board.matrix[point.i][point.j] == ASZFALT || board.matrix[point.i][point.j] == ZEBRA;
+    }catch(e){
+        console.warn("Isaszfalt outofbound")
+    }
 }
 
 function calcWeight(from,dest,distance){
