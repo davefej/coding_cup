@@ -44,12 +44,15 @@ function pollThickFromServer(){
              * Test car collision logic
              */
             if (GAME.myCar && data.thick){
-                var danger = isDangerV1(GAME.myCar, data.thick)
-                if(danger){
-                    console.log("Danger: \n"+ JSON.stringify(danger, null, 2));
-                    // stopGame();
-                    // alert("isDangerV1");
-                }
+                var danger = CollisionDetector.isDanger(GAME.myCar, data.thick);
+                    if(danger){
+                        console.log("Danger:\n");
+                        console.log(danger);
+                        console.log("Tickdta: \n");
+                        console.log(data.thick);
+                        stopGame();
+                        alert("isDangerV3");
+                    }
             }
         },
         error: function(data) {            
@@ -104,8 +107,6 @@ for(var i = 0; i < mapRows.length; i++){
     }
 }
 
-
-
 function drawMap(thickData, answerCommand, route){
     GAME.canvasContext.fillStyle = "#ffffff";
     GAME.canvasContext.fillRect(0,0,GAME.gameMatrix[0].length,GAME.gameMatrix.length);
@@ -116,6 +117,7 @@ function drawMap(thickData, answerCommand, route){
         document.getElementById("step").innerHTML = answerCommand;
         document.getElementById("transportednum").innerHTML = GAME.myCar.transported;
         document.getElementById("life").innerHTML = GAME.myCar.life;
+        document.getElementById("gameid").innerHTML = thickData.request_id.game_id;
     }
     // Ha szallitok utast
     if(GAME.myCar && GAME.myCar.passenger_id && thickData.passengers){
@@ -350,12 +352,35 @@ function replayNext(game){
     }    
 }
 
-// var F = {
-//     killMe: () => {
-//         var me = 3;
-//         return F.killSomeone(me);
-//     },
-//     killSomeone: (n) => {
-//         return n+1;
-//     }
-// };
+function canvas_arrow(context, fromx, fromy, tox, toy, r){
+    var x_center = tox;
+    var y_center = toy;
+
+    var angle;
+    var x;
+    var y;
+
+    context.beginPath();
+
+    angle = Math.atan2(toy-fromy,tox-fromx)
+    x = r*Math.cos(angle) + x_center;
+    y = r*Math.sin(angle) + y_center;
+
+    context.moveTo(x, y);
+
+    angle += (1/3)*(2*Math.PI)
+    x = r*Math.cos(angle) + x_center;
+    y = r*Math.sin(angle) + y_center;
+
+    context.lineTo(x, y);
+
+    angle += (1/3)*(2*Math.PI)
+    x = r*Math.cos(angle) + x_center;
+    y = r*Math.sin(angle) + y_center;
+
+    context.lineTo(x, y);
+
+    context.closePath();
+
+    context.fill();
+}
