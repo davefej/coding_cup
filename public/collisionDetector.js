@@ -1,7 +1,25 @@
+let DIR_UP = "^";
+let DIR_DOWN = "v";
+let DIR_LEFT = "<";
+let DIR_RIGHT = ">";
+
+let CMD_NO_OP = "0";
+let CMD_ACCELERATION = "+"; 
+let CMD_DECELERATION = "-";
+let CMD_CAR_INDEX_LEFT = "<";
+let CMD_CAR_INDEX_RIGHT = ">";
+
+let normals = {
+    '^': {x: 0, y: -1},
+    '>': {x: 1, y: 0},
+    '<': {x: -1, y: 0},
+    'v': {x: 0, y: 1}
+};
+
 /**
  * COLLISION DETECTION LOGIC
  */
-var viewArea = [
+let viewArea = [
     "         ",
     "   XXX   ",
     "   XXX   ",
@@ -94,44 +112,67 @@ function isSeen(point, car){
     return false;
 }
 
-let normals = {
-    '^': {x: 0, y: -1},
-    '>': {x: 1, y: 0},
-    '<': {x: -1, y: 0},
-    'v': {x: 0, y: 1}
-};
+/** Calculate future pos of an object */
+let FuturePosCalculator = {
+    calculateFuturePos(obj){
+        var fpos = {
+            x: normals[obj.direction].x*obj.speed + obj.pos.x,
+            y: normals[obj.direction].y*obj.speed + obj.pos.y
+        };
+        return fpos;
+    }
+}
 
-function canvas_arrow(context, fromx, fromy, tox, toy, r){
-    var x_center = tox;
-    var y_center = toy;
+function isDangerV3(myCar, tickData){
+    /** First, check for cars only */
+    if(tickData.cars.length >= 2){
+        var carsSeen = [];
+        var pointsSeen = mapCoordsSeenByCar(myCar);
 
-    var angle;
-    var x;
-    var y;
+        for(let p of pointsSeen){
+            for(let car of tickData.cars){
+                if (car.pos.x == p.x && car.pos.y == p.y){
+                    carsSeen.push(car);
+                }
+            }
+        }
 
-    context.beginPath();
+        fpos_myCar = FuturePosCalculator.calculateFuturePos(myCar);
+        for(let obj of carsSeen){
+            fpos_obj = FuturePosCalculator.calculateFuturePos(obj);
+            
+            var positionsHitByMyCar = [];
+            for(var k=0; k<=Math.max(Math.abs(fpos_myCar.x-myCar.pos.x), Math.abs(fpos_myCar.y - myCar.pos.y)); k++){
+                positionsHitByMyCar.push({
+                    x: myCar.pos.x + k*normals[myCar.direction].x,
+                    y: myCar.pos.y + k*normals[myCar.direction].y 
+                });
+            }
 
-    angle = Math.atan2(toy-fromy,tox-fromx)
-    x = r*Math.cos(angle) + x_center;
-    y = r*Math.sin(angle) + y_center;
+            var positionsHitByObject = [];
+            for(var k=0; k<=Math.max(Math.abs(fpos_obj.x-obj.pos.x), Math.abs(fpos_obj.y - obj.pos.y)); k++){
+                positionsHitByObject.push({
+                    x: obj.pos.x + k*normals[obj.direction].x,
+                    y: obj.pos.y + k*normals[obj.direction].y
+                });
+            }
 
-    context.moveTo(x, y);
+            for(let pos of positionsHitByMyCar){
+                if (positionsHitByObject.includes(function(o){return o.x == pos.x && o.y == pos.y})){
+                    var colliding = {
+                        myCar: myCar,
+                        objectType: 'car',
+                        object: obj
+                    };
+                    return colliding;
+                }
+            }
+        }
+    }
 
-    angle += (1/3)*(2*Math.PI)
-    x = r*Math.cos(angle) + x_center;
-    y = r*Math.sin(angle) + y_center;
+    /** Now check for pedestrians */
 
-    context.lineTo(x, y);
-
-    angle += (1/3)*(2*Math.PI)
-    x = r*Math.cos(angle) + x_center;
-    y = r*Math.sin(angle) + y_center;
-
-    context.lineTo(x, y);
-
-    context.closePath();
-
-    context.fill();
+    return undefined;
 }
 
 function isDangerV1(myCar, tickData){
@@ -148,23 +189,16 @@ function isDangerV1(myCar, tickData){
 
     for(let p of pointsSeen){
       for(let car of tickData.cars){
-           if (car.pos.x === p.x && car.pos.y === p.y){
+           if (car.pos.x == p.x && car.pos.y == p.y){
                carsSeen.push(car);
            }
        }
        for(let ped of tickData.pedestrians){
-           if (ped.pos.x === p.x && ped.pos.y === p.y){
+           if (ped.pos.x == p.x && ped.pos.y == p.y){
                pedestriansSeen.push(ped);
            }
        }
     }
-
-    var normals = {
-        '^': {x: 0, y: -1},
-        '>': {x: 1, y: 0},
-        '<': {x: -1, y: 0},
-        'v': {x: 0, y: 1}
-    };
 
     for(let obj of carsSeen){
         // calculate relative speed
@@ -260,8 +294,15 @@ function isDangerV2(myCar, tickData){
                 break;
             case GO_RIGHT:
                 break;
+            default:
+                console.error("[CollisionDetector]: Cannot calculate futurePos. obj.command="+obj.command+"\n");
+                console.error(tickData);
+                throw Error();
         }
-        return car;
+        if(!futurePos){
+            throw Error("[CollisionDetector]: futurePos is undefined");
+        }
+        return futurePos;
     },
     futureNO_OP: (obj) => {
         fpos = {x: obj.pos.x, y: obj.pos.y};
@@ -326,32 +367,56 @@ function isDangerV2(myCar, tickData){
 
     for(let p of pointsSeen){
       for(let car of tickData.cars){
-           if (car.pos.x === p.x && car.pos.y === p.y){
+           if (car.pos.x == p.x && car.pos.y == p.y){
                carsSeen.push(car);
            }
        }
        for(let ped of tickData.pedestrians){
-           if (ped.pos.x === p.x && ped.pos.y === p.y){
+           if (ped.pos.x == p.x && ped.pos.y == p.y){
                pedestriansSeen.push(ped);
            }
        }
     }
 
-    fpos_myCar = FuturePosCalculator(myCar);
-    dx_myCar = fpos_myCar.x - myCar.pos.x;
-    dy_myCar = fpos_myCar.y - myCar.pos.y;
-
-    for(let car of carsSeen){
-        fpos_object = FuturePosCalculator(car);
-        
-        dx_object = fpos_object.x - car.pos.x;
-        dy_object = fpos_object.y - car.pos.y;
+    if (tickData.cars.length >= 2){
+        fpos_myCar = FuturePosCalculator.futurePos(myCar);
+        for(let car of carsSeen){
+            fpos_object = FuturePosCalculator.futurePos(car);
+            
+            var pos = myCar.pos;
+            var pos2 = car.pos;
+            var positionsHitByMyCar = [];
+            var positionsHitByObject = [];
+            while(pos.x != fpos_myCar.x || pos.y != fpos_myCar.y){
+                positionsHitByMyCar.push(pos);
+                pos.x = pos.x + normals[myCar.direction].x;
+                pos.y = pos.y + normals[myCar.direction].y;
+            }
+            while(pos2.x != fpos_object.x || pos2.y != fpos_object.y){
+                positionsHitByObject.push(pos2);
+                pos2.x = pos2.x + normals[car.direction].x;
+                pos2.y = pos2.y + normals[car.direction].y;
+            }
+            
+            for(let pos of positionsHitByMyCar){
+                if (positionsHitByObject.includes(function(o){return o.x == pos.x && o.y == pos.y})){
+                    colliding = {
+                        myCar: myCar,
+                        objectType: 'car',
+                        object: car
+                    };
+                    return colliding;
+                }
+            }
+        }
     }
+    
+    
 }
 
 var interface = {
     mapCoordsSeenByCar: mapCoordsSeenByCar,
-    isDanger: isDangerV2,
+    isDanger: isDangerV3,
     isSeen: isSeen
 };
 
