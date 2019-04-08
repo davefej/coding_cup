@@ -123,6 +123,10 @@ module.exports = {
         var distanceToNode = calcPointsDistance(futureCar.pos,toNode);
         var directionToNode = calculateDirection(futureCar.pos,toNode);
         var nextNodesDirection = calculateDirection(toNode,nextNode);
+
+        car.distanceToNode = distanceToNode;
+        car.directionToNode = directionToNode;
+        car.nextNodesDirection = nextNodesDirection;
         if(car.speed == 0){ 
             if(futureCar.speed == 0){
                 //MOST INDULUNK!! Futurecar == car!!
@@ -283,13 +287,11 @@ function calculateDirection(from,to){
 }
 
 function calcPointsDistance(a,b){
-    
-    a.x = a.x || a.j;
-    b.y = b.y || b.i;
-
+    a = normalizePoint(a);
+    b = normalizePoint(b);
     if(isMagicPoints(a,b)){
         console.warn("Magin point distance calculation")
-        return 60 - Math.abs(a.x-b.x) + Math.abs(a.y-b.y);
+        return Math.min( 60 - (Math.abs(a.x-b.x) + Math.abs(a.y-b.y)),Math.abs(a.x-b.x) + Math.abs(a.y-b.y));
     }else{
         return Math.abs(a.x-b.x) + Math.abs(a.y-b.y);
     }
