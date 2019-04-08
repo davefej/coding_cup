@@ -32,10 +32,10 @@ function pollThickFromServer(){
                 stopGame();
                 return;
             }
-            console.log("---------LÉPÉS "+data.thick.request_id.tick+" -----------");
-            console.log(data.thick.cars[0]);
-            console.log(data.sent);
-            console.log(data.info);
+            // console.log("---------LÉPÉS "+data.thick.request_id.tick+" -----------");
+            // console.log(data.thick.cars[0]);
+            // console.log(data.sent);
+            // console.log(data.info);
             repeatAfterDelay();
             drawMap(data.thick, data.sent.command, data.info.route);
             window.steps.push(data);

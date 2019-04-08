@@ -124,10 +124,12 @@ let FuturePosCalculator = {
 }
 
 function isDangerV3(myCar, tickData){
+    var pointsSeen = mapCoordsSeenByCar(myCar);
+    var carsSeen = [];
+    var pedestriansSeen = [];
+
     /** First, check for cars only */
     if(tickData.cars.length >= 2){
-        var carsSeen = [];
-        var pointsSeen = mapCoordsSeenByCar(myCar);
 
         for(let p of pointsSeen){
             for(let car of tickData.cars){
@@ -137,19 +139,24 @@ function isDangerV3(myCar, tickData){
             }
         }
 
-        fpos_myCar = FuturePosCalculator.calculateFuturePos(myCar);
-        for(let obj of carsSeen){
-            fpos_obj = FuturePosCalculator.calculateFuturePos(obj);
-            
-            var positionsHitByMyCar = [];
-            for(var k=0; k<=Math.max(Math.abs(fpos_myCar.x-myCar.pos.x), Math.abs(fpos_myCar.y - myCar.pos.y)); k++){
-                positionsHitByMyCar.push({
-                    x: myCar.pos.x + k*normals[myCar.direction].x,
-                    y: myCar.pos.y + k*normals[myCar.direction].y 
-                });
-            }
+        // if(carsSeen.length){
+        //     debugger;
+        // }
+        
+        var fpos_myCar = FuturePosCalculator.calculateFuturePos(myCar);
+        var positionsHitByMyCar = [];
+        
+        for(var k=0; k<=Math.max(Math.abs(fpos_myCar.x-myCar.pos.x), Math.abs(fpos_myCar.y - myCar.pos.y)); k++){
+            positionsHitByMyCar.push({
+                x: myCar.pos.x + k*normals[myCar.direction].x,
+                y: myCar.pos.y + k*normals[myCar.direction].y 
+            });
+        }
 
+        for(let obj of carsSeen){
+            var fpos_obj = FuturePosCalculator.calculateFuturePos(obj);
             var positionsHitByObject = [];
+
             for(var k=0; k<=Math.max(Math.abs(fpos_obj.x-obj.pos.x), Math.abs(fpos_obj.y - obj.pos.y)); k++){
                 positionsHitByObject.push({
                     x: obj.pos.x + k*normals[obj.direction].x,
@@ -158,7 +165,7 @@ function isDangerV3(myCar, tickData){
             }
 
             for(let pos of positionsHitByMyCar){
-                if (positionsHitByObject.includes(function(o){return o.x == pos.x && o.y == pos.y})){
+                if (positionsHitByObject.find(function(o){return o.x == pos.x && o.y == pos.y})){
                     var colliding = {
                         myCar: myCar,
                         objectType: 'car',
@@ -171,7 +178,50 @@ function isDangerV3(myCar, tickData){
     }
 
     /** Now check for pedestrians */
+    if(tickData.pedestrians.length){
+        
+        for(let p of pointsSeen){
+            for(let ped of tickData.pedestrians){
+                if(ped.pos.x == p.x && ped.pos.y == p.y){
+                    pedestriansSeen.push(ped);
+                }
+            }
+        }
 
+        var fpos_myCar = FuturePosCalculator.calculateFuturePos(myCar);
+        var positionsHitByMyCar = [];
+        
+        for(var k=0; k<=Math.max(Math.abs(fpos_myCar.x-myCar.pos.x), Math.abs(fpos_myCar.y - myCar.pos.y)); k++){
+            positionsHitByMyCar.push({
+                x: myCar.pos.x + k*normals[myCar.direction].x,
+                y: myCar.pos.y + k*normals[myCar.direction].y 
+            });
+        }
+
+        for(let obj of pedestriansSeen){
+            var fpos_obj = FuturePosCalculator.calculateFuturePos(obj);
+            var positionsHitByObject = [];
+
+            for(var k=0; k<=Math.max(Math.abs(fpos_obj.x-obj.pos.x), Math.abs(fpos_obj.y - obj.pos.y)); k++){
+                positionsHitByObject.push({
+                    x: obj.pos.x + k*normals[obj.direction].x,
+                    y: obj.pos.y + k*normals[obj.direction].y
+                });
+            }
+
+            for(let pos of positionsHitByMyCar){
+                if (positionsHitByObject.find(function(o){return o.x == pos.x && o.y == pos.y})){
+                    var colliding = {
+                        myCar: myCar,
+                        objectType: 'pedestrian',
+                        object: obj
+                    };
+                    return colliding;
+                }
+            }
+        }
+    }
+    
     return undefined;
 }
 
