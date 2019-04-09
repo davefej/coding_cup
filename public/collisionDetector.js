@@ -64,7 +64,7 @@ function dot(mat22, vec2){
     return {x: Math.round(mat22[0][0]*vec2.x + mat22[0][1]*vec2.y), y: Math.round(mat22[1][0]*vec2.x + mat22[1][1]*vec2.y)}
 }
 
-function transformedSeenCoords(dir) {
+function relativeSeenCoordsForDirection(dir) {
     if (dir === '^'){
         return viewAreaCoords;
     } else if (dir === 'v') {
@@ -94,7 +94,7 @@ function transformedSeenCoords(dir) {
 };
 
 function mapCoordsSeenByCar(car) {
-    var seenRel = transformedSeenCoords(car.direction);
+    var seenRel = relativeSeenCoordsForDirection(car.direction);
     var rv = [];
     seenRel.forEach(c => {
         rv.push({x: c.x + car.pos.x, y: c.y + car.pos.y});
@@ -169,7 +169,11 @@ function isDangerV3(myCar, tickData){
                     var colliding = {
                         myCar: myCar,
                         objectType: 'car',
-                        object: obj
+                        object: obj,
+                        collisionDistance: {
+                            x: obj.pos.x - myCar.pos.x,
+                            y: obj.pos.y - myCar.pos.y
+                        }
                     };
                     return colliding;
                 }
@@ -214,7 +218,11 @@ function isDangerV3(myCar, tickData){
                     var colliding = {
                         myCar: myCar,
                         objectType: 'pedestrian',
-                        object: obj
+                        object: obj,
+                        collisionDistance: {
+                            x: obj.pos.x - myCar.pos.x,
+                            y: obj.pos.y - myCar.pos.y
+                        }
                     };
                     return colliding;
                 }
@@ -467,7 +475,9 @@ function isDangerV2(myCar, tickData){
 var interface = {
     mapCoordsSeenByCar: mapCoordsSeenByCar,
     isDanger: isDangerV3,
-    isSeen: isSeen
+    isSeen: isSeen,
+    relativeSeenCoords: viewAreaCoords,
+    relativeSeenCoordsForDirection: relativeSeenCoordsForDirection
 };
 
 CollisionDetector = interface;

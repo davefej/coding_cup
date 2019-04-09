@@ -7,7 +7,8 @@ window.GAME = {
     pathFinder:undefined,
     graph:createGraph(),
     myCar: undefined,
-    myPassenger: undefined
+    myPassenger: undefined,
+    lastLife: undefined
 };
 
 var POLL = false;
@@ -46,14 +47,24 @@ function pollThickFromServer(){
             if (GAME.myCar && data.thick){
                 var danger = CollisionDetector.isDanger(GAME.myCar, data.thick);
                     if(danger){
-                        console.log("Danger:\n");
-                        console.log(danger);
-                        console.log("Tickdta: \n");
-                        console.log(data.thick);
-                        stopGame();
-                        alert("isDangerV3");
+                        console.error("Danger:\n");
+                        console.error(danger);
+                        // console.log("Tickdta: \n");
+                        // console.log(data.thick);
+                        // stopGame();
+                        // alert("isDangerV3");
                     }
             }
+            if(GAME.myCar && data.thick){
+                if(!GAME.lastLife){
+                    GAME.lastLife = GAME.myCar.life;
+                }else if(GAME.myCar.life != GAME.lastLife){
+                        console.error("Life point was lost !!!");
+                        stopGame();
+                        alert("Life point was lost !!!");
+                }
+            }
+            
         },
         error: function(data) {            
             console.error("Game finished with error!",data);            
