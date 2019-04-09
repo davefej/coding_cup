@@ -176,8 +176,8 @@ function drawMap(thickData, answerCommand, route){
         thickData.cars.forEach(car => {
             if(GAME.myCar && car.id != GAME.myCar.id){
                 for(let point of CollisionDetector.mapCoordsSeenByCar(car)){
-                    GAME.canvasContext.fillStyle = "#FFFF0077";
-                    GAME.canvasContext.fillRect(point.x*GAME.mapRatio, point.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+             //       GAME.canvasContext.fillStyle = "#FFFF0077";
+             //       GAME.canvasContext.fillRect(point.x*GAME.mapRatio, point.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
                 }
                 
                 // Draw an arrow
