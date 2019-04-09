@@ -35,16 +35,16 @@ function makePathFinding(from,to){
         throw Error("Nem Útra útkeresés "+fromAszfalt.y+":"+fromAszfalt.x+" "+toAszfalt.y+":"+toAszfalt.x)
     }
     if(fromAszfalt.jardaToGO){
-        console.warn("JARDATOGO!! fromAszfalt calcdistance",fromAszfalt);
+        console.warn("JARDATOGO!! fromAszfalt",fromAszfalt);
         nodes.push({id:fromAszfalt.jardaToGO.y+":"+fromAszfalt.jardaToGO.x})
     }
     if(toAszfalt.jardaToGO){
-        console.warn("JARDATOGO!! toAszfalt calcdistance",toAszfalt);
-        nodes.shift({id:toAszfalt.jardaToGO.y+":"+toAszfalt.jardaToGO.x})
+        console.warn("JARDATOGO!! toAszfalt",toAszfalt);
+        nodes.unshift({id:toAszfalt.jardaToGO.y+":"+toAszfalt.jardaToGO.x})
     }
     if(nodes.length == 0){
         console.warn("Rossz útvonal liks", graph.getLinks(fromAszfalt.y+":"+fromAszfalt.x), graph.getLinks(toAszfalt.y+":"+toAszfalt.x));
-        throw Error("Rossz útvonal!!! calcdistance"+from.y+":"+from.x+" "+to.y+":"+to.x+" "+fromAszfalt.y+":"+fromAszfalt.x+" "+toAszfalt.y+":"+toAszfalt.x);
+        throw Error("Rossz útvonal!!!"+from.y+":"+from.x+" "+to.y+":"+to.x+" "+fromAszfalt.y+":"+fromAszfalt.x+" "+toAszfalt.y+":"+toAszfalt.x);
     }
     return nodes;
 }

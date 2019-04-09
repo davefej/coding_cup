@@ -37,7 +37,7 @@ function drawMap(thickData, answerCommand, route){
         fromy = GAME.myCar.pos.y*GAME.mapRatio;
         tox = GAME.mapRatio*normals[GAME.myCar.direction].x + fromx;
         toy = GAME.mapRatio*normals[GAME.myCar.direction].y + fromy;
-        canvas_arrow(GAME.canvasContext, fromx + 0.5*GAME.mapRatio, fromy + 0.5*GAME.mapRatio, tox + 0.5*GAME.mapRatio, toy + 0.5*GAME.mapRatio, 5);
+        canvas_arrow(GAME.canvasContext, fromx + 0.5*GAME.mapRatio, fromy + 0.5*GAME.mapRatio, tox + 0.5*GAME.mapRatio, toy + 0.5*GAME.mapRatio, 0.5*GAME.mapRatio);
 
         // Draw passenger destinations
         if(GAME.myPassenger){
@@ -67,7 +67,7 @@ function drawMap(thickData, answerCommand, route){
                 fromy = car.pos.y*GAME.mapRatio;
                 tox = GAME.mapRatio*normals[car.direction].x + fromx;
                 toy = GAME.mapRatio*normals[car.direction].y + fromy;
-                canvas_arrow(GAME.canvasContext, fromx + 0.5*GAME.mapRatio, fromy + 0.5*GAME.mapRatio, tox + 0.5*GAME.mapRatio, toy + 0.5*GAME.mapRatio, 5);
+                canvas_arrow(GAME.canvasContext, fromx + 0.5*GAME.mapRatio, fromy + 0.5*GAME.mapRatio, tox + 0.5*GAME.mapRatio, toy + 0.5*GAME.mapRatio, 0.5*GAME.mapRatio);
                 
                 GAME.canvasContext.fillStyle = "#2196F388";
                 GAME.canvasContext.fillRect(car.pos.x*GAME.mapRatio,car.pos.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
@@ -122,4 +122,53 @@ function mapSizeChanged(value){
     })
     GAME.canvasContext = canvas.getContext("2d");
     drawMap();
+}
+
+
+function canvas_arrow(context, fromx, fromy, tox, toy, r){
+    var x_center = tox;
+    var y_center = toy;
+
+    var angle;
+    var x;
+    var y;
+
+    context.beginPath();
+
+    angle = Math.atan2(toy-fromy,tox-fromx)
+    x = r*Math.cos(angle) + x_center;
+    y = r*Math.sin(angle) + y_center;
+
+    context.moveTo(x, y);
+
+    angle += (1/3)*(2*Math.PI)
+    x = r*Math.cos(angle) + x_center;
+    y = r*Math.sin(angle) + y_center;
+
+    context.lineTo(x, y);
+
+    angle += (1/3)*(2*Math.PI)
+    x = r*Math.cos(angle) + x_center;
+    y = r*Math.sin(angle) + y_center;
+
+    context.lineTo(x, y);
+
+    context.closePath();
+
+    context.fill();
+}
+
+function drawLine(from,to){
+    GAME.canvasContext.lineWidth = 3;
+    GAME.canvasContext.strokeStyle = "#0000FF33";
+    GAME.canvasContext.fillStyle = "#ff000088";
+    var b  = GAME.mapRatio/2;
+    GAME.canvasContext.beginPath();
+    GAME.canvasContext.moveTo(from.x*GAME.mapRatio + b, from.y*GAME.mapRatio + b);
+    GAME.canvasContext.lineTo(to.x*GAME.mapRatio + b, to.y*GAME.mapRatio + b);
+    GAME.canvasContext.stroke();
+    GAME.canvasContext.beginPath();
+    canvas_arrow(GAME.canvasContext, from.x*GAME.mapRatio + b, from.y*GAME.mapRatio + b, to.x*GAME.mapRatio + b, to.y*GAME.mapRatio + b, b);    
+    //GAME.canvasContext.arc(to.x*GAME.mapRatio+b, to.y*GAME.mapRatio+b, b, 0, 2 * Math.PI);
+    GAME.canvasContext.fill();
 }

@@ -7,7 +7,8 @@ LEFT = "<"; RIGHT = ">"; UP = "^"; DOWN = "v";
 buildGraph = function(){
     graph = createGraph();
     calledList = [];
-    findStreetsFromPoint({i:3,j:0},RIGHT);
+    //findStreetsFromPoint({i:3,j:0},RIGHT);
+    graphBuilder_R();
     addRotations();
     pathFinder = ngraphPath.aStar(graph, {
         oriented: true,
@@ -59,7 +60,7 @@ function findStreetsFromPoint(from,direction){
                 }        
             }
             var distance = Math.abs(from.i-to.i) + Math.abs(from.j-to.j);
-            graph.addLink(from.i+":"+from.j,to.i+":"+to.j,{weight:calcWeight(from,to,distance)});
+            addLink(from.i+":"+from.j,to.i+":"+to.j,{weight:calcWeight(from,to,distance)});
         }else{
             break;
         }
@@ -266,6 +267,10 @@ function clockWiseDir(dir){
     }
 }
 
+function countedClockWiseDir(dir){
+    return clockWiseDir(clockWiseDir(clockWiseDir(dir)));
+}
+
 function addRotations(){
     for(var i = 0; i < GAME.gameMatrix.length; i++){
         for(var j = 0; j < GAME.gameMatrix.length; j++){
@@ -290,25 +295,273 @@ function addRotations(){
 }
 
 function addHorizontalRotations(i,j){
-    graph.addLink(i+":"+j,i+":"+(j+1),{weight:2});
-    graph.addLink((i+1)+":"+j,(i+1)+":"+(j+1),{weight:2});
-    graph.addLink((i+2)+":"+j,(i+2)+":"+(j+1),{weight:2});
+    addLink(i+":"+j,i+":"+(j+1),{weight:2});
+    addLink((i+1)+":"+j,(i+1)+":"+(j+1),{weight:2});
+    addLink((i+2)+":"+j,(i+2)+":"+(j+1),{weight:2});
 
-    graph.addLink(i+":"+(j+1),i+":"+j,{weight:2});
-    graph.addLink((i+1)+":"+(j+1),(i+1)+":"+j,{weight:2});
-    graph.addLink((i+2)+":"+(j+1),(i+2)+":"+j,{weight:2});
+    addLink(i+":"+(j+1),i+":"+j,{weight:2});
+    addLink((i+1)+":"+(j+1),(i+1)+":"+j,{weight:2});
+    addLink((i+2)+":"+(j+1),(i+2)+":"+j,{weight:2});
 }
 
 function addVerticalRotations(i,j){
-    graph.addLink(i+":"+j,(i+1)+":"+j,{weight:2});
-    graph.addLink(i+":"+(j+1),(i+1)+":"+(j+1),{weight:2});
-    graph.addLink(i+":"+(j+2),(i+1)+":"+(j+2),{weight:2});
+    addLink(i+":"+j,(i+1)+":"+j,{weight:2});
+    addLink(i+":"+(j+1),(i+1)+":"+(j+1),{weight:2});
+    addLink(i+":"+(j+2),(i+1)+":"+(j+2),{weight:2});
 
-    graph.addLink((i+1)+":"+j,i+":"+j,{weight:2});
-    graph.addLink((i+1)+":"+(j+1),i+":"+(j+1),{weight:2});
-    graph.addLink((i+1)+":"+(j+2),i+":"+(j+2),{weight:2});
+    addLink((i+1)+":"+j,i+":"+j,{weight:2});
+    addLink((i+1)+":"+(j+1),i+":"+(j+1),{weight:2});
+    addLink((i+1)+":"+(j+2),i+":"+(j+2),{weight:2});
 }
 
 function pointFromIJ(i,j){
     return {i:i,j:j};
+}
+
+function addLink(fromStr,toStr,options){
+    if(typeof window != "undefined"){
+        if(!window.graphLinks){
+            window.graphLinks = [];
+        }
+        window.graphLinks.push({
+            from:{
+                x:fromStr.split(":")[1],
+                y:fromStr.split(":")[0]
+            },
+            to:{
+                x:toStr.split(":")[1],
+                y:toStr.split(":")[0]
+            }
+        });
+    }
+    graph.addLink(fromStr,toStr,options);
+}
+
+function startLinkAnimation(){
+    window.drawLinks = JSON.parse(JSON.stringify(window.graphLinks)); 
+    drawLink();
+}
+var lastDrawed = null;
+var drawsame = true;
+function drawLink(){
+    
+    var link = window.drawLinks.shift();
+    if(!link){
+        return;
+    }
+    if(drawsame){
+        drawLine(link.from,link.to);
+    }else{
+        if(!isSameLine(lastDrawed,link)){        
+            if(lastDrawed){
+                drawLine(lastDrawed.from,lastDrawed.to);
+            }    
+        }    
+    }
+    lastDrawed = link;
+    setTimeout(drawLink,document.getElementById("stepdelay").value)
+}
+
+function isSameLine(line1,line2){
+    if(line1 && line2 && line1.from.x == line2.from.x && line1.from.y == line2.from.y){
+        if(line1.to.y == line2.to.y || line1.to.x == line2.to.x){
+            return true;
+        }        
+    }
+    return false;
+}
+
+
+
+
+//////////////ROBi FÉLE ALG/////////
+
+function graphBuilder_R(){
+
+    for(var i = 0; i < GAME.gameMatrix.length; i++){
+        for(var j = 0; j < GAME.gameMatrix.length; j++){
+            var point = {
+                x:j,
+                y:i
+            };
+            var ret = isRSD(point);
+            if(ret){
+                findStreets_RIGHT({
+                        x:ret.x,
+                        y:ret.y
+                    },
+                    ret.dir
+                );
+            }
+        }
+    }
+}
+
+function findStreets_RIGHT(from,direction){
+    if(!isAszfalt(from)){
+        return;
+    }
+    var str = from.i+":"+from.j+"_"+direction;
+    if(calledList.indexOf(str) > -1){
+        return;
+    }
+    calledList.push(str);
+    var curveDirection = rightNarrowCurve(from,direction);
+    if(curveDirection){
+        findStreets_RIGHT(curveDirection.point,curveDirection.direction);
+    }
+    for(var i = 1; i < 59;i++){
+        var to = nextPoint(from,direction,i);
+        if(isAszfalt(to)){
+            if(!isAszfalt(nextPoint(from,direction,i+2))){
+                if(isAszfalt(nextPoint(to,clockWiseDir(direction),1))){                    
+                    if(isAszfalt(nextPoint(nextPoint(from,direction,i-1),clockWiseDir(direction),1))){
+                        console.error("Not GOOD street",from,to)
+                        break;
+                    }                    
+                }        
+            }
+            var distance = Math.abs(from.i-to.i) + Math.abs(from.j-to.j);
+            addLink(from.i+":"+from.j,to.i+":"+to.j,{weight:calcWeight(from,to,distance)});
+        }else{
+            break;
+        }
+    }
+
+    if(isAszfalt(nextPoint(from,direction,1))){
+        findStreets_RIGHT(nextPoint(from,direction,1),direction);
+    }else{
+        if(!isAszfalt(nextPoint(from,clockWiseDir(direction),1))){
+            if(isAszfalt(nextPoint(from,countedClockWiseDir(direction),1))){
+                console.warn("COUNTED CLOCKWISE DIR!!");
+                findStreets_RIGHT(from,countedClockWiseDir(direction));
+            }
+        }
+    }
+}
+
+
+
+function isRSD(from,direction) {
+    from.dir = direction;
+    var up = isAszfalt({
+        x: from.x,
+        y: from.y - 1
+    });
+    var right = isAszfalt({
+        x: from.x + 1,
+        y: from.y
+    });
+    var down = isAszfalt({
+        x: from.x,
+        y: from.y + 1
+    });
+    var left = isAszfalt({
+        x: from.x - 1,
+        y: from.y
+    });
+    if (from.dir == RIGHT) {
+        if (down) {
+            return {
+                x: from.x,
+                y: from.y + 1,
+                dir: DOWN
+            };
+        } else if (right) {
+            return {
+                x: from.x + 1,
+                y: from.y,
+                dir: RIGHT
+            };
+        } else if (up) {
+            return {
+                x: from.x,
+                y: from.y - 1,
+                dir: UP
+            };
+        }
+    } else if (from.dir == LEFT) {
+        if (up) {
+            return {
+                x: from.x,
+                y: from.y - 1,
+                dir: UP
+            };
+        } else if (left) {
+            return {
+                x: from.x - 1,
+                y: from.y,
+                dir: LEFT
+            };
+        } else if (down) {
+            return {
+                x: from.x,
+                y: from.y + 1,
+                dir: DOWN
+            };
+        }
+    } else if (from.dir == UP) {
+        if (right) {
+            return {
+                x: from.x + 1,
+                y: from.y,
+                dir: RIGHT
+            };
+        } else if (up) {
+            return {
+                x: from.x,
+                y: from.y - 1,
+                dir: UP
+            };
+        } else if (left) {
+            return {
+                x: from.x - 1,
+                y: from.y,
+                dir: LEFT
+            };
+        }
+    } else if (from.dir == DOWN) {
+        if (left) {
+            return {
+                x: from.x - 1,
+                y: from.y,
+                dir: LEFT
+            };
+        } else if (down) {
+            return {
+                x: from.x,
+                y: from.y + 1,
+                dir: DOWN
+            };
+        } else if (right) {
+            return {
+                x: from.x + 1,
+                y: from.y,
+                dir: RIGHT
+            };
+        }
+    } else if (!right && left && up && down) {
+        var up_right = isAszfalt({
+            x: from.x + 1,
+            y: from.y - 1
+        });
+        if (up_right) {
+            from.dir = UP;
+            return {
+                x: from.x,
+                y: from.y - 1,
+                dir: UP
+            };
+        }
+    } else if (!up && !right && left && down) {
+        from.dir = UP;
+        return {
+            x: from.x - 1,
+            y: from.y,
+            dir: LEFT
+        };
+    } else {
+        console.info("Not RSD " + JSON.stringify(from));
+    }
+    return null;
 }
