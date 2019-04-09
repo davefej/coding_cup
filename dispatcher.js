@@ -7,15 +7,14 @@ module.exports = {
         if(!waze){
             throw Error("Pathfinder not set to dispatcher!");
         }
-        //return dummyClosest(carPos,passengersList);
+        console.log("Searching for next passenger..")
+        //return dummyClosest(carPos,passengersList);        
         try{
             return findClosestPassanger(carPos,passengersList);
         }catch(e){
-            console.error("Útkeresés Nem útra");
-            throw Error(e);
+            console.error("Útkeresés Nem útra findClosestPassengers");
+            return dummyClosest(carPos,passengersList);
         }
-        
-        //return travellingSalesMan(carPos,passengersList);
     }
 };
 

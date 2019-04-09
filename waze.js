@@ -1,53 +1,19 @@
 ngraphPath = require('ngraph.path');
 createGraph = require('ngraph.graph');
-board = null;
+require('./public/common.js');
 graph = null;
 pathFinder = null;
-NEW = true;
 
 module.exports  = {
-    build(brd){
-        board = brd;
-        if(NEW){
-            return buildGraph(board);
-        }
-        graph = createGraph();
-        for(var i = 0; i < board.matrix.length; i++){
-            for(var j = 0; j < board.matrix.length; j++){
-                findAllLinearStreets({i:i,j:j});
-            }
-        }
-        addMagicPoints();
-        addAllJárdaNextToAszfalt();
-
-        pathFinder = ngraphPath.aStar(graph, {
-            distance(fromNode, toNode, link) {
-              return link.data.weight;
-            }
-        });
+    build(){
+        buildGraph();        
     },
     navigate(from,to){
-        from = normalizePoint(from);
-        to = normalizePoint(to);
-        from = nearestAszfaltIfJarda(from);
-        to = nearestAszfaltIfJarda(to);
-        try{
-            return pathFinder.find(from.y+":"+from.x,to.y+":"+to.x);
-        }catch(e){
-            throw Error("Nem Útora őtkeresés "+from.x+":"+from.y+" "+to.x+":"+to.y)
-        }
-        
+        var nodes = makePathFinding(from,to);
+        return formatNodeList(nodes);
     },
     calcDistance(from,to){
-        from = normalizePoint(from);
-        to = normalizePoint(to);
-        from = nearestAszfaltIfJarda(from);
-        to = nearestAszfaltIfJarda(to);
-        try{
-            var nodes = pathFinder.find(from.y+":"+from.x,to.y+":"+to.x);
-        }catch(e){
-            throw Error("Nem Útora őtkeresés "+from.x+":"+from.y+" "+to.x+":"+to.y)
-        }
+        var nodes = makePathFinding(from,to);
         var sum = 0;
         for(var i = nodes.length-1; i > 0; i--){
             var akt = nodes[i].id.split(":");
@@ -58,53 +24,29 @@ module.exports  = {
     }
 };
 
-function findAllLinearStreets(from, across){
-    if(!isAszfalt(from)){
-        return;
-    } 
-    if(!across){
-        //first find
-        findAllLinearStreets(from,{i:from.i+1,j:from.j});
-        findAllLinearStreets(from,{i:from.i-1,j:from.j});
-        findAllLinearStreets(from,{i:from.i,j:from.j+1});
-        findAllLinearStreets(from,{i:from.i,j:from.j-1});
-        return;
-    }
-    if(across.i < 0 || across.j < 0 || across.i >= board.width || across.j >= board.height){
-        //Not in map
-        return;
-    }
-    if(isAszfalt(across)){
-        var distance = Math.abs(from.i-across.i) + Math.abs(from.j-across.j);
-        graph.addLink(from.i+":"+from.j,across.i+":"+across.j,{weight:calcWeight(from,across,distance)});
-        findAllLinearStreets(from,{
-            i:across.i + (across.i-from.i)/distance,
-            j:across.j + (across.j-from.j)/distance
-        });
-    }
-}
-
-isAszfalt = function(point){
-    point = normalizePoint(point);
-    return board.matrix[point.i][point.j] == ASZFALT || board.matrix[point.i][point.j] == ZEBRA;
-}
-
-isJarda = function(point){
-    point = normalizePoint(point);
+function makePathFinding(from,to){
+    from = normalizePoint(from);
+    to = normalizePoint(to);
+    var fromAszfalt = nearestAszfaltIfJarda(from);
+    var toAszfalt = nearestAszfaltIfJarda(to);
     try{
-        return board.matrix[point.i][point.j] == JÁRDA;
+        var nodes = pathFinder.find(fromAszfalt.y+":"+fromAszfalt.x,toAszfalt.y+":"+toAszfalt.x);
     }catch(e){
-        console.warn("Outofbound JÁRDA")
-        return false;
-    }    
-}
-
-function calcWeight(from,dest,distance){
-    if(distance > 5){
-        return 5 + Math.floor((distance-5) / 3)
-    }else{
-        return distance;
+        throw Error("Nem Útra útkeresés "+fromAszfalt.y+":"+fromAszfalt.x+" "+toAszfalt.y+":"+toAszfalt.x)
     }
+    if(fromAszfalt.jardaToGO){
+        console.warn("JARDATOGO!! fromAszfalt calcdistance",fromAszfalt);
+        nodes.push({id:fromAszfalt.jardaToGO.y+":"+fromAszfalt.jardaToGO.x})
+    }
+    if(toAszfalt.jardaToGO){
+        console.warn("JARDATOGO!! toAszfalt calcdistance",toAszfalt);
+        nodes.shift({id:toAszfalt.jardaToGO.y+":"+toAszfalt.jardaToGO.x})
+    }
+    if(nodes.length == 0){
+        console.warn("Rossz útvonal liks", graph.getLinks(fromAszfalt.y+":"+fromAszfalt.x), graph.getLinks(toAszfalt.y+":"+toAszfalt.x));
+        throw Error("Rossz útvonal!!! calcdistance"+from.y+":"+from.x+" "+to.y+":"+to.x+" "+fromAszfalt.y+":"+fromAszfalt.x+" "+toAszfalt.y+":"+toAszfalt.x);
+    }
+    return nodes;
 }
 
 function nearestAszfaltIfJarda(point){
@@ -124,106 +66,70 @@ function nearestAszfaltIfJarda(point){
         return {x:point.x, y:point.y-1}
     }
 
+
     if(isNextToAszfalt({x:point.x+1,y:point.y})){
-        return {x:point.x+1, y:point.y}
+        var aszfaltPoint = isNextToAszfalt({x:point.x+1,y:point.y});
+        aszfaltPoint.jardaToGO = {x:point.x+1,y:point.y};
+        return aszfaltPoint;
     }
     if(isNextToAszfalt({x:point.x-1, y:point.y})){
-        return {x:point.x-1, y:point.y}
+        var aszfaltPoint =   isNextToAszfalt({x:point.x-1, y:point.y});
+        aszfaltPoint.jardaToGO = {x:point.x-1,y:point.y};
+        return aszfaltPoint;
     }
     if(isNextToAszfalt({x:point.x, y:point.y+1})){
-        return {x:point.x, y:point.y+1}
+        var aszfaltPoint =  isNextToAszfalt({x:point.x, y:point.y+1});
+        aszfaltPoint.jardaToGO = {x:point.x,y:point.y+1};
+        return aszfaltPoint;
     }
     if(isNextToAszfalt({x:point.x, y:point.y-1})){
-        return {x:point.x, y:point.y-1}
+        var aszfaltPoint = isNextToAszfalt({x:point.x, y:point.y-1})
+        aszfaltPoint.jardaToGO = {x:point.x,y:point.y-1};
+        return aszfaltPoint;
     }
-    
-/*
-    for(var x = -1; x <=1; x++){
-        for(var y = -1; y <=1; y++){
-            if(isAszfalt({x:point.x+x, y:point.y+y})){
-                return {x:point.x+x, y:point.y+y};
-            }
-        }
-    }
-*/
     throw Error("Nincs Út a utas mellett");
 }
 
-normalizePoint = function(point){
-    if(typeof point.i == "undefined"){
-        point.i = point.y
-    }
-    if(typeof point.j == "undefined"){
-        point.j = point.x
-    }   
-    return point;
-}
-
-function addMagicPoints(){
-    for(var i = 2; i <=3; i++){
-        for(var j = 2; j <= 3; j++){
-            graph.addLink(i+":"+j,(59-i)+":"+j,{weight:calcMagicWeight(i,j)});
-            graph.addLink(i+":"+j,i+":"+(59-j),{weight:calcMagicWeight(i,j)});
-            graph.addLink((59-i)+":"+j,i+":"+j,{weight:calcMagicWeight(i,j)});
-            graph.addLink(i+":"+(59-j),i+":"+j,{weight:calcMagicWeight(i,j)});
-
-            graph.addLink((59-i)+":"+(59-j),(59-i)+":"+j,{weight:calcMagicWeight(i,j)});
-            graph.addLink((59-i)+":"+(59-j),i+":"+(59-j),{weight:calcMagicWeight(i,j)});
-            graph.addLink((59-i)+":"+j,(59-i)+":"+(59-j),{weight:calcMagicWeight(i,j)});
-            graph.addLink(i+":"+(59-j),(59-i)+":"+(59-j),{weight:calcMagicWeight(i,j)});
-
-        }
-    }
-}
-function calcMagicWeight(i,j){
-    if(i==j){
-        return 5;
-    }
-    if(Math.abs(i-j)==1){
-        return 6;
-    }
-    return 7;
-}
-
-function addAllJárdaNextToAszfalt(){
-    for(var i = 0; i < board.matrix.length; i++){
-        for(var j = 0; j < board.matrix.length; j++){
-            if(isAszfalt({i:i,j:j})){
-                if(isJarda({i:i,j:j+1})){
-                    graph.addLink(i+":"+j,i+":"+(j+1),{weight:100});
-                    graph.addLink(i+":"+(j+1),i+":"+j,{weight:100});
-                }
-                if(isJarda({i:i,j:j-1})){
-                    graph.addLink(i+":"+j,i+":"+(j-1),{weight:100});
-                    graph.addLink(i+":"+(j-1),i+":"+j,{weight:100});
-                }
-                if(isJarda({i:i+1,j:j})){
-                    graph.addLink(i+":"+j,(i+1)+":"+j,{weight:100});
-                    graph.addLink((i+1)+":"+j,i+":"+j,{weight:100});
-                }
-                if(isJarda({i:i-1,j:j})){
-                    graph.addLink(i+":"+j,(i-1)+":"+j,{weight:100});
-                    graph.addLink((i-1)+":"+j,i+":"+j,{weight:100});
-                }
-            }
-        }
-    }
-}
 function isNextToAszfalt(point){
     if(isAszfalt({x:point.x+1,y:point.y})){
-        return true;
+        return {x:point.x+1,y:point.y};
     }
     if(isAszfalt({x:point.x-1, y:point.y})){
-        return true;
+        return {x:point.x-1, y:point.y};
     }
     if(isAszfalt({x:point.x, y:point.y+1})){
-        return true;
+        return {x:point.x, y:point.y+1};
     }
     if(isAszfalt({x:point.x, y:point.y-1})){
-        return true;
+        return {x:point.x, y:point.y-1};
     }
     return false;
 }
-if(NEW){
-require('./public/common.js');
+
+
+function formatNodeList(nodes){
+    if(nodes.length == 0){
+        console.error("Empty nodes list!! in formatNodeList");
+    }
+    var ret = [];
+    for(var i = nodes.length -1; i >= 0; i--){
+        var positions = nodes[i].id.split(":");
+        ret.push({
+            x:parseInt(positions[1]),
+            y:parseInt(positions[0])
+        });
+    }
+    var resultArr = [];
+    resultArr.push(ret[0]);
+    for(var i = 1; i < ret.length-1; i++){
+        if(ret[i-1].x == ret[i].x && ret[i].x == ret[i+1].x){
+            continue;
+        }
+        if(ret[i-1].y == ret[i].y && ret[i].y == ret[i+1].y){
+            continue;
+        }
+        resultArr.push(ret[i]);
+    }
+    resultArr.push(ret[ret.length-1]);
+    return resultArr;
 }

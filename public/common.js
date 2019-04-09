@@ -4,24 +4,20 @@ pathFinder = null;
 graph = null;
 LEFT = "<"; RIGHT = ">"; UP = "^"; DOWN = "v";
 
-buildGraph = function(brd){
+buildGraph = function(){
     graph = createGraph();
-  
     calledList = [];
     findStreetsFromPoint({i:3,j:0},RIGHT);
-    addRotations(brd);
-
+    addRotations();
     pathFinder = ngraphPath.aStar(graph, {
         oriented: true,
         distance(fromNode, toNode, link) {
             return link.data.weight;
         }
-    });
-     
+    });     
 }
 
-function findStreetsFromPoint(from,direction){
-    
+function findStreetsFromPoint(from,direction){    
     if(!isAszfalt(from)){
         return;
     }
@@ -30,11 +26,6 @@ function findStreetsFromPoint(from,direction){
         return;
     }
     calledList.push(str);
-
-
-
-
-    debugger;
     var curveDirection = rightNarrowCurve(from,direction);
     if(curveDirection){
         findStreetsFromPoint(curveDirection.point,curveDirection.direction);
@@ -62,7 +53,7 @@ function findStreetsFromPoint(from,direction){
             if(!isAszfalt(nextPoint(from,direction,i+2))){
                 if(isAszfalt(nextPoint(to,clockWiseDir(direction),1))){                    
                     if(isAszfalt(nextPoint(nextPoint(from,direction,i-1),clockWiseDir(direction),1))){
-                        console.error("Not GOOD",from,to)
+                        console.error("Not GOOD street",from,to)
                         break;
                     }                    
                 }        
@@ -77,8 +68,6 @@ function findStreetsFromPoint(from,direction){
     if(isAszfalt(nextPoint(from,direction,1))){
         findStreetsFromPoint(nextPoint(from,direction,1),direction);
     }
-
-
 }
 
 function rightNarrowCurve(from,direction){
@@ -219,7 +208,7 @@ function nextPoint(point,dir,distance){
 isAszfalt = function(point){
     point = normalizePoint(point);
     try{
-        return board.matrix[point.i][point.j] == ASZFALT || board.matrix[point.i][point.j] == ZEBRA;
+        return GAME.gameMatrix[point.i][point.j] == ASZFALT || GAME.gameMatrix[point.i][point.j] == ZEBRA;
     }catch(e){
         console.warn("Isaszfalt outofbound")
     }
@@ -228,7 +217,7 @@ isAszfalt = function(point){
 isJarda = function(point){
     point = normalizePoint(point);
     try{
-        return board.matrix[point.i][point.j] == JÁRDA;
+        return GAME.gameMatrix[point.i][point.j] == JÁRDA;
     }catch(e){
         console.warn("Outofbound JÁRDA")
         return false;
@@ -237,7 +226,7 @@ isJarda = function(point){
 
 calcWeight = function(from,dest,distance){
     if(distance > 5){
-        return distance;//5 + Math.floor((distance-5) / 3)
+        return 5 + Math.floor((distance-5) / 2);
     }else{
         return distance;
     }
@@ -250,136 +239,18 @@ normalizePoint = function(point){
     }
     if(typeof point.j == "undefined"){
         point.j = point.x
-    }   
+    }
+    if(typeof point.x == "undefined"){
+        point.x = point.j
+    }
+    if(typeof point.y == "undefined"){
+        point.y = point.i
+    }
+    point.j = parseInt(point.j);
+    point.i = parseInt(point.i);
+    point.x = parseInt(point.x);
+    point.y = parseInt(point.y);
     return point;
-}
-
-
-function addMagicPoints(){
-    for(var i = 2; i <=3; i++){
-        for(var j = 2; j <= 3; j++){
-            graph.addLink(i+":"+j,(59-i)+":"+j,{weight:calcMagicWeight(i,j)});
-            graph.addLink(i+":"+j,i+":"+(59-j),{weight:calcMagicWeight(i,j)});
-            graph.addLink((59-i)+":"+j,i+":"+j,{weight:calcMagicWeight(i,j)});
-            graph.addLink(i+":"+(59-j),i+":"+j,{weight:calcMagicWeight(i,j)});
-
-            graph.addLink((59-i)+":"+(59-j),(59-i)+":"+j,{weight:calcMagicWeight(i,j)});
-            graph.addLink((59-i)+":"+(59-j),i+":"+(59-j),{weight:calcMagicWeight(i,j)});
-            graph.addLink((59-i)+":"+j,(59-i)+":"+(59-j),{weight:calcMagicWeight(i,j)});
-            graph.addLink(i+":"+(59-j),(59-i)+":"+(59-j),{weight:calcMagicWeight(i,j)});
-
-        }
-    }
-}
-function calcMagicWeight(i,j){
-    if(i==j){
-        return 5;
-    }
-    if(Math.abs(i-j)==1){
-        return 6;
-    }
-    return 7;
-}
-
-function addAllJárdaNextToAszfalt(){
-    for(var i = 0; i < board.matrix.length; i++){
-        for(var j = 0; j < board.matrix.length; j++){
-            if(isAszfalt({i:i,j:j})){
-                if(isJarda({i:i,j:j+1})){
-                    graph.addLink(i+":"+j,i+":"+(j+1),{weight:100});
-                    graph.addLink(i+":"+(j+1),i+":"+j,{weight:100});
-                }
-                if(isJarda({i:i,j:j-1})){
-                    graph.addLink(i+":"+j,i+":"+(j-1),{weight:100});
-                    graph.addLink(i+":"+(j-1),i+":"+j,{weight:100});
-                }
-                if(isJarda({i:i+1,j:j})){
-                    graph.addLink(i+":"+j,(i+1)+":"+j,{weight:100});
-                    graph.addLink((i+1)+":"+j,i+":"+j,{weight:100});
-                }
-                if(isJarda({i:i-1,j:j})){
-                    graph.addLink(i+":"+j,(i-1)+":"+j,{weight:100});
-                    graph.addLink((i-1)+":"+j,i+":"+j,{weight:100});
-                }
-            }
-        }
-    }
-}
-
-function findAllLinearStreets(from, across){
-    if(!isAszfalt(from)){
-        return;
-    } 
-    if(!across){
-        //first find
-        findAllLinearStreets(from,{i:from.i+1,j:from.j});
-        findAllLinearStreets(from,{i:from.i-1,j:from.j});
-        findAllLinearStreets(from,{i:from.i,j:from.j+1});
-        findAllLinearStreets(from,{i:from.i,j:from.j-1});
-        return;
-    }
-    if(across.i < 0 || across.j < 0 || across.i >= board.width || across.j >= board.height){
-        //Not in map
-        return;
-    }
-    if(isAszfalt(across)){
-        var distance = Math.abs(from.i-across.i) + Math.abs(from.j-across.j);
-        graph.addLink(from.i+":"+from.j,across.i+":"+across.j,{weight:calcWeight(from,across,distance)});
-        findAllLinearStreets(from,{
-            i:across.i + (across.i-from.i)/distance,
-            j:across.j + (across.j-from.j)/distance
-        });
-    }
-}
-
-nearestAszfaltIfJarda = function (point){
-    if(isAszfalt(point)){
-        return point;
-    }
-    if(isAszfalt({x:point.x+1,y:point.y})){
-        return {x:point.x+1, y:point.y}
-    }
-    if(isAszfalt({x:point.x-1, y:point.y})){
-        return {x:point.x-1, y:point.y}
-    }
-    if(isAszfalt({x:point.x, y:point.y+1})){
-        return {x:point.x, y:point.y+1}
-    }
-    if(isAszfalt({x:point.x, y:point.y-1})){
-        return {x:point.x, y:point.y-1}
-    }
-
-    if(isNextToAszfalt({x:point.x+1,y:point.y})){
-        return {x:point.x+1, y:point.y}
-    }
-    if(isNextToAszfalt({x:point.x-1, y:point.y})){
-        return {x:point.x-1, y:point.y}
-    }
-    if(isNextToAszfalt({x:point.x, y:point.y+1})){
-        return {x:point.x, y:point.y+1}
-    }
-    if(isNextToAszfalt({x:point.x, y:point.y-1})){
-        return {x:point.x, y:point.y-1}
-    }
-
-    throw Error("Nincs Út a utas mellett");
-}
-
-
-function isNextToAszfalt(point){
-    if(isAszfalt({x:point.x+1,y:point.y})){
-        return true;
-    }
-    if(isAszfalt({x:point.x-1, y:point.y})){
-        return true;
-    }
-    if(isAszfalt({x:point.x, y:point.y+1})){
-        return true;
-    }
-    if(isAszfalt({x:point.x, y:point.y-1})){
-        return true;
-    }
-    return false;
 }
 
 function clockWiseDir(dir){
@@ -394,9 +265,10 @@ function clockWiseDir(dir){
             return UP;
     }
 }
-function addRotations(board){
-    for(var i = 0; i < board.matrix.length; i++){
-        for(var j = 0; j < board.matrix.length; j++){
+
+function addRotations(){
+    for(var i = 0; i < GAME.gameMatrix.length; i++){
+        for(var j = 0; j < GAME.gameMatrix.length; j++){
             if(isAszfalt(pointFromIJ(i,j)) &&
                 isAszfalt(pointFromIJ(i+1,j)) &&
                 isAszfalt(pointFromIJ(i+2,j)) &&

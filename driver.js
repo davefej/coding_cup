@@ -11,7 +11,7 @@ module.exports = {
         waze = pathFinder;
     },
     setRoutePlan(nodeList){
-        routePoints = formatNodeList(nodeList);
+        routePoints = nodeList;
     },
     getRoutePoints(){
         return routePoints
@@ -221,7 +221,12 @@ function isMagicPoint(point){
 }
 
 function isSamepos(pos1,pos2){
-    return pos1.x == pos2.x && pos1.y == pos2.y;
+    try{
+        return pos1.x == pos2.x && pos1.y == pos2.y;
+    }catch(e){
+        console.warn("Issamepos error",pos1,pos2);
+    }
+    
 }
 
 function turnCommandFromDirections(lastDirection,nextDirection){
@@ -298,17 +303,6 @@ function calcPointsDistance(a,b){
     
 }
 
-function formatNodeList(nodes){
-    var ret = [];
-    for(var i = nodes.length -1; i >= 0; i--){
-        var positions = nodes[i].id.split(":");
-        ret.push({
-            x:positions[1],
-            y:positions[0]
-        });
-    }
-    return ret;
-}
 
 function futureCarPos(car,command){
     car = JSON.parse(JSON.stringify(car));
