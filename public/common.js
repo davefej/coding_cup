@@ -6,10 +6,13 @@ LEFT = "<"; RIGHT = ">"; UP = "^"; DOWN = "v";
 
 buildGraph = function(){
     graph = createGraph();
-    calledList = [];
-    //findStreetsFromPoint({i:3,j:0},RIGHT);
+    calledList = [];    
     graphBuilder_R();
     addRotations();
+
+    addJardaPoints();
+
+
     pathFinder = ngraphPath.aStar(graph, {
         oriented: true,
         distance(fromNode, toNode, link) {
@@ -18,57 +21,15 @@ buildGraph = function(){
     });     
 }
 
-function findStreetsFromPoint(from,direction){    
-    if(!isAszfalt(from)){
-        return;
-    }
-    var str = from.i+":"+from.j+"_"+direction;
-    if(calledList.indexOf(str) > -1){
-        return;
-    }
-    calledList.push(str);
-    var curveDirection = rightNarrowCurve(from,direction);
-    if(curveDirection){
-        findStreetsFromPoint(curveDirection.point,curveDirection.direction);
-    }
+function addJardaPoints(){
+    addLink(8+":"+33,11+":"+33,{weight:3});
+    addLink(11+":"+33,8+":"+33,{weight:3});
 
-    var curve2Direction = leftBigCurve(from,direction);
-    if(curve2Direction){
-        findStreetsFromPoint(curve2Direction.point,curve2Direction.direction);
-    }
+    addLink(29+":"+39,26+":"+39,{weight:3});
+    addLink(26+":"+39,29+":"+39,{weight:3});
 
-    var curveAkadalyDirection = curveAkadaly(from,direction);
-    if(curveAkadalyDirection){
-        findStreetsFromPoint(curveAkadalyDirection.point,curveAkadalyDirection.direction);
-    }
-
-    var oneWayCurveAkadalyDirection = oneWayCurveAkadaly(from,direction);
-    if(oneWayCurveAkadalyDirection){
-        findStreetsFromPoint(oneWayCurveAkadalyDirection.point,oneWayCurveAkadalyDirection.direction);
-    }
-
-
-    for(var i = 1; i < 59;i++){
-        var to = nextPoint(from,direction,i);
-        if(isAszfalt(to)){
-            if(!isAszfalt(nextPoint(from,direction,i+2))){
-                if(isAszfalt(nextPoint(to,clockWiseDir(direction),1))){                    
-                    if(isAszfalt(nextPoint(nextPoint(from,direction,i-1),clockWiseDir(direction),1))){
-                        console.error("Not GOOD street",from,to)
-                        break;
-                    }                    
-                }        
-            }
-            var distance = Math.abs(from.i-to.i) + Math.abs(from.j-to.j);
-            addLink(from.i+":"+from.j,to.i+":"+to.j,{weight:calcWeight(from,to,distance)});
-        }else{
-            break;
-        }
-    }
-
-    if(isAszfalt(nextPoint(from,direction,1))){
-        findStreetsFromPoint(nextPoint(from,direction,1),direction);
-    }
+    addLink(25+":"+42,23+":"+42,{weight:3});
+    addLink(23+":"+42,25+":"+42,{weight:3});    
 }
 
 function rightNarrowCurve(from,direction){
@@ -89,93 +50,6 @@ function rightNarrowCurve(from,direction){
                     point:nextPoint(from,direction,1),
                     direction:dir2
                 };
-            }
-        }
-    }
-}
-
-function curveAkadaly(from,direction){
-    var dir2;
-    if(direction == RIGHT){
-        dir2 = UP;        
-    }else if(direction == LEFT){
-        dir2 = DOWN;
-    }else if(direction == UP){
-        dir2 = LEFT;
-    }else if(direction == DOWN){
-        dir2 = RIGHT;
-    }
-    if(isAszfalt(nextPoint(from,direction,1))){
-        if(!isAszfalt(nextPoint(from,direction,2))){
-            if(isAszfalt(nextPoint(from,dir2,1))){
-                if(isAszfalt(nextPoint(from,dir2,2))){
-                    if(isAszfalt(nextPoint(nextPoint(from,direction,1),dir2,1))){
-                        if(isAszfalt(nextPoint(nextPoint(from,direction,1),dir2,2))){
-                            if(isAszfalt(nextPoint(nextPoint(from,direction,2),dir2,1))){
-                                if(isAszfalt(nextPoint(nextPoint(from,direction,2),dir2,2))){
-                                    return {
-                                        point:nextPoint(from,direction,1),
-                                        direction:dir2
-                                    };
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-function oneWayCurveAkadaly(from,direction){
-    var dir2;
-    if(direction == RIGHT){
-        dir2 = UP;        
-    }else if(direction == LEFT){
-        dir2 = DOWN;
-    }else if(direction == UP){
-        dir2 = LEFT;
-    }else if(direction == DOWN){
-        dir2 = RIGHT;
-    }
-    if(isAszfalt(nextPoint(from,direction,1))){
-        if(!isAszfalt(nextPoint(from,direction,2))){
-            if(!isAszfalt(nextPoint(from,dir2,1))){
-                if(isAszfalt(nextPoint(nextPoint(from,direction,1),dir2,1))){            
-                    if(!isAszfalt(nextPoint(nextPoint(from,direction,1),dir2,-1))){                        
-                        return {
-                            point:nextPoint(from,direction,1),
-                            direction:dir2
-                        };
-                    }
-                }
-            }
-        }
-    }
-}
-
-function leftBigCurve(from,direction){
-    var dir2;
-    if(direction == RIGHT){
-        dir2 = UP;        
-    }else if(direction == LEFT){
-        dir2 = DOWN;
-    }else if(direction == UP){
-        dir2 = LEFT;
-    }else if(direction == DOWN){
-        dir2 = RIGHT;
-    }
-    if(isAszfalt(nextPoint(from,direction,1))){
-        if(isAszfalt(nextPoint(from,dir2,1))){
-            if(isAszfalt(nextPoint(from,dir2,2))){
-                if(isAszfalt(nextPoint(nextPoint(from,direction,1),dir2,1))){
-                    if(isAszfalt(nextPoint(nextPoint(from,direction,1),dir2,2))){
-                        return {
-                            point:nextPoint(from,direction,1),
-                            direction:dir2
-                        };
-                    }
-                }
             }
         }
     }

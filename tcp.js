@@ -14,6 +14,8 @@ module.exports = {
     connect(onMessage,onClose){
         dev_server_thick_id = 0;
         client = new net.Socket();
+        client.pipe(split());
+        client.setKeepAlive(true);
         firstReqest = true;
         client.connect(PORT, IP, function() {
             console.log('TCP Client Connected sucessfully');
@@ -31,8 +33,7 @@ module.exports = {
             console.error("Cannot write to closed connetion");
             return false;
         }
-        client.write(JSON.stringify(msg));
-        client.pipe(split())
+        client.write(JSON.stringify(msg));        
         return true;
     },
     close(){

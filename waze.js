@@ -8,8 +8,8 @@ module.exports  = {
     build(){
         buildGraph();        
     },
-    navigate(from,to){
-        var nodes = makePathFinding(from,to);
+    navigate(from,to){       
+        var nodes = makePathFinding(from,to);       
         return formatNodeList(nodes);
     },
     calcDistance(from,to){

@@ -43,6 +43,7 @@ module.exports = {
     },
     passengerPicked(){
         state = HASPASSENGER;
+        console.log("Passenger picked!")
         this.transportPassenger();
     },
     passangerTransported(){
@@ -104,8 +105,7 @@ module.exports = {
             throw Error("Calculate command in free state");
         }
         if(!isAszfalt(futureCar.pos)){
-            console.warn("Future Pos nem aszfalt")
-            //throw Error("Future Pos nem aszfalt");
+            //console.warn("Future Pos nem aszfalt")            
         }
         if(isSamepos(futureCar.pos,routePoints[0])){
             routePoints.shift();
@@ -169,7 +169,7 @@ module.exports = {
 
 
                 if(isMagicPoints(toNode,nextNode)){
-                    console.warn("Magic Points");
+                   // console.warn("Magic Points");
                 }
 
                 if(distanceToNode == 1){
@@ -265,7 +265,8 @@ function calculateDirection(from,to){
     };
 
 
-    if(calcPointsDistance(from,to) > 52){
+    /*if(isMagicPoints(from,to)){
+        console.log("Magic Point direction",from,to);
         if(from.x > to.x){
             return RIGHT;
         }else if(from.x < to.x){
@@ -275,7 +276,7 @@ function calculateDirection(from,to){
         }else if(from.y > to.y){
             return DOWN;
         }    
-    }
+    }*/
 
 
     if(from.x > to.x){
@@ -295,7 +296,6 @@ function calcPointsDistance(a,b){
     a = normalizePoint(a);
     b = normalizePoint(b);
     if(isMagicPoints(a,b)){
-        console.warn("Magin point distance calculation")
         return Math.min( 60 - (Math.abs(a.x-b.x) + Math.abs(a.y-b.y)),Math.abs(a.x-b.x) + Math.abs(a.y-b.y));
     }else{
         return Math.abs(a.x-b.x) + Math.abs(a.y-b.y);

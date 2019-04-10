@@ -179,5 +179,5 @@ function replayNext(game){
         },document.getElementById("stepdelay").value);
     }else{
         game.running = false;
-    }    
+    }
 }
