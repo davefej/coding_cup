@@ -10,7 +10,7 @@ buildGraph = function(){
     graphBuilder_R();
     addRotations();
 
-    addJardaPoints();
+    //addJardaPoints();
 
 
     pathFinder = ngraphPath.aStar(graph, {
@@ -100,6 +100,11 @@ isJarda = function(point){
 }
 
 calcWeight = function(from,dest,distance){
+     
+    if(isTeleportRoute(from,dest)){
+        return 60-distance;
+    }
+
     if(distance > 5){
         return 5 + Math.floor((distance-5) / 2);
     }else{
@@ -107,6 +112,24 @@ calcWeight = function(from,dest,distance){
     }
 }
 
+
+isMagicPoints = function(point1,point2){
+    return isMagicPoint(point1) && isMagicPoint(point2);
+}
+
+isTeleportRoute = function(from,to){
+    var distance =  Math.abs(from.x-to.x) + Math.abs(from.y-to.y);
+    return isMagicPoints(from,to) && (distance > 3);
+}
+
+isMagicPoint = function(point){
+    if(point.x == 2 || point.x == 3 || point.x == 56 || point.x == 57){
+        if(point.y == 2 || point.y == 3 || point.y == 56 || point.y == 57){
+            return true;
+        }
+    }
+    return false;
+}
 
 normalizePoint = function(point){
     if(typeof point.i == "undefined"){

@@ -5,7 +5,7 @@ FULL_THROTTLE = "FULL_THROTTLE";EMERGENCY_BRAKE = "EMERGENCY_BRAKE"; GO_LEFT = "
 
 const FREE = 1, HASPASSENGER = 2, GOINGFORPASSENGER = 3, WAITINGIN = 4,WAITINGOUT =5;
 var routePoints, car, state = FREE, currentPassenger, waze,stepLog;
-
+var teleporting = 0;
 module.exports = {
     setPathFinder(pathFinder){
         waze = pathFinder;
@@ -109,6 +109,7 @@ module.exports = {
         }
         if(isSamepos(futureCar.pos,routePoints[0])){
             routePoints.shift();
+            teleporting = 0;
         }
         var toNode = routePoints[0];
         var nextNode = routePoints[1];        
@@ -121,6 +122,16 @@ module.exports = {
             return DECELERATION;                
         }
         var distanceToNode = calcPointsDistance(futureCar.pos,toNode);
+        if(isTeleportRoute(futureCar.pos,toNode)){
+            teleporting = 1;
+        }
+        if(teleporting && teleporting < 4){
+            console.log("teleporint")
+            teleporting++;
+            return NO_OP;
+        }else{
+            teleporting = 0;
+        }
         var directionToNode = calculateDirection(futureCar.pos,toNode);
         var nextNodesDirection = calculateDirection(toNode,nextNode);
 
@@ -207,18 +218,7 @@ module.exports = {
     }
 };
 
-function isMagicPoints(point1,point2){
-    return isMagicPoint(point1) && isMagicPoint(point2);
-}
 
-function isMagicPoint(point){
-    if(point.x == 2 || point.x == 3 || point.x == 56 || point.x == 57){
-        if(point.y == 2 || point.y == 3 || point.y == 56 || point.y == 57){
-            return true;
-        }
-    }
-    return false;
-}
 
 function isSamepos(pos1,pos2){
     try{
@@ -265,7 +265,7 @@ function calculateDirection(from,to){
     };
 
 
-    /*if(isMagicPoints(from,to)){
+    if(isTeleportRoute(from,to)){
         console.log("Magic Point direction",from,to);
         if(from.x > to.x){
             return RIGHT;
@@ -276,8 +276,7 @@ function calculateDirection(from,to){
         }else if(from.y > to.y){
             return DOWN;
         }    
-    }*/
-
+    }
 
     if(from.x > to.x){
         return LEFT;
@@ -295,12 +294,11 @@ function calculateDirection(from,to){
 function calcPointsDistance(a,b){
     a = normalizePoint(a);
     b = normalizePoint(b);
-    if(isMagicPoints(a,b)){
+    if(isTeleportRoute(a,b)){
         return Math.min( 60 - (Math.abs(a.x-b.x) + Math.abs(a.y-b.y)),Math.abs(a.x-b.x) + Math.abs(a.y-b.y));
     }else{
         return Math.abs(a.x-b.x) + Math.abs(a.y-b.y);
-    }
-    
+    }    
 }
 
 
