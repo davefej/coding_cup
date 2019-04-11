@@ -3,10 +3,12 @@ const app = express()
 const port = 3000
 const game = require('./game.js')
 const tcp = require('./tcp.js')
+const CollisionDetector = require('./public/collisionDetector.js');
 var fs = require("fs");
 var RUNNING = false;
 var PENDING_HTTP_RESPS = [];
 var GAMNELOG = [];
+var CAR_STATUS_LOGS = [];
 app.use(express.static('public'));
 app.use(express.json());
 
@@ -19,6 +21,7 @@ app.post('/startorstop', function(req, res){
     if(!RUNNING){
         tcp.connect(onJsonMessage,onCloseMessage);
         GAMNELOG = [];
+        CAR_STATUS_LOGS = [];
         setTimeout(function(){                 
             //initial message
             lastThickTime = new Date();
@@ -58,6 +61,11 @@ onJsonMessage = function(data){
         step:stepData,
         info: game.getInfo()
     });
+    if(data.request_id){
+        if(data.request_id.car_id != undefined){
+            CAR_STATUS_LOGS.push(CollisionDetector.getStatus(data.request_id.car_id, data));
+        }
+    }
     var httpResp = PENDING_HTTP_RESPS.shift();
     if(USE_CLIENT && httpResp  && !httpResp.finished){
         httpResp.send({
@@ -105,6 +113,8 @@ function cDir(dir){
 }
 function onCloseMessage(){
     fs.writeFileSync("./logs/log_"+GAMNELOG[0].thick.request_id.game_id,JSON.stringify(GAMNELOG));
+    fs.writeFileSync("./logs/status_log_"+GAMNELOG[0].thick.request_id.game_id,
+                    JSON.stringify(CAR_STATUS_LOGS.filter((o)=>{return o.life!=0;})));
     console.log("Leállás oka:",GAMNELOG[GAMNELOG.length-1].thick.messages);
     setTimeout(function(){
         if(PENDING_HTTP_RESPS.length > 0){

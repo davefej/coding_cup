@@ -102,6 +102,30 @@ function mapCoordsSeenByCar(car) {
     return rv;
 }
 
+/**
+ *  UNTESTED FUNCTION !!!
+ */
+function relativeCoordFromMapCoord(car, mapCoord){
+    var p = {
+        x: mapCoord.x - car.pos.x,
+        y: mapCoord.y - car.pos.y
+    };
+    if(car.direction === '^'){
+        return p;
+    }else if(car.direction === 'v'){
+        var R = rmatrix(Math.PI);
+        return dot(R, p);
+    }else if (car.direction === '<'){
+        var R = rmatrix(-Math.PI/2.0);
+        return dot(R, p);
+    }else if(car.direction === '>'){
+        var R = rmatrix(Math.PI/2.0);
+        return dot(R, p);
+    } else {
+        throw Error("Invalid car direction: "+dir);
+    }
+}
+
 function isSeen(point, car){
     var pointsSeen = mapCoordsSeenByCar(car);
     for(let p of pointsSeen){
@@ -110,6 +134,54 @@ function isSeen(point, car){
         }
     }
     return false;
+}
+
+function getStatus(myCarId, tickData){
+    var myCar = tickData.cars.find(function(c) {return c.id === myCarId});
+    if(!myCar){
+        throw Error("Car not found! Car id = ", myCarId);
+    }
+    if (!GAME.gameMatrix) {
+        throw Error("GAME.gameMatrix is not defined");
+    }
+    var relativePointsSeen = relativeSeenCoordsForDirection(myCar.direction);
+
+    var points = [];
+    for(let rp of relativePointsSeen){
+        var pdata = {};
+        pdata.x = rp.x;
+        pdata.y = rp.y;
+        try{
+            pdata.type = GAME.gameMatrix[myCar.pos.y + rp.y][myCar.pos.x + rp.x];
+        } catch (e) {};
+        if(tickData.cars.length > 0){
+            for(let car of tickData.cars){
+                if (car.id != myCar.id && car.pos.x == myCar.pos.x + rp.x && car.pos.y == myCar.pos.y + rp.y){
+                    pdata.car = {
+                        speed: car.speed,
+                        direction: car.direction,
+                    };
+                }
+            }
+        }
+        if(tickData.pedestrians.length > 0){
+            for(let ped of tickData.pedestrians){
+                if( ped.pos.x == myCar.pos.x+rp.x && ped.pos.y == myCar.pos.y ){
+                    pdata.pedestrian = {
+                        direction: ped.direction,
+                        speed: ped.speed
+                    };
+                }
+            }
+        }
+        points.push(pdata);
+    }
+    return {
+        speed: myCar.speed,
+        life: myCar.life,
+        direction: myCar.direction,
+        relativePoints: points
+    };
 }
 
 /** Calculate future pos of an object */
@@ -123,11 +195,15 @@ let FuturePosCalculator = {
     }
 }
 
-function isDangerV3(myCar, tickData){
+function isDangerV3(myCarId, tickData){
+    var myCar = tickData.cars.find(function(c) {return c.id === myCarId});
+    if(!myCar){
+        return;
+    }
     var pointsSeen = mapCoordsSeenByCar(myCar);
     var carsSeen = [];
     var pedestriansSeen = [];
-
+    
     /** First, check for cars only */
     if(tickData.cars.length >= 2){
 
@@ -473,6 +549,7 @@ function isDangerV2(myCar, tickData){
 }
 
 var interface = {
+    getStatus: getStatus,
     mapCoordsSeenByCar: mapCoordsSeenByCar,
     isDanger: isDangerV3,
     isSeen: isSeen,

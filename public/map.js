@@ -3,8 +3,6 @@ function drawMap(thickData, answerCommand, route){
     GAME.canvasContext.fillStyle = "#ffffff";
     GAME.canvasContext.fillRect(0,0,GAME.gameMatrix[0].length,GAME.gameMatrix.length);
     if (thickData){
-        var myCarId = thickData.request_id.car_id;
-        GAME.myCar = thickData.cars.find(function(c) {return c.id === myCarId});
         document.getElementById("thicknum").innerHTML = thickData.request_id.tick;
         document.getElementById("step").innerHTML = answerCommand;
         document.getElementById("transportednum").innerHTML = GAME.myCar.transported;
@@ -56,10 +54,10 @@ function drawMap(thickData, answerCommand, route){
         });
         thickData.cars.forEach(car => {
             if(GAME.myCar && car.id != GAME.myCar.id){
-                for(let point of CollisionDetector.mapCoordsSeenByCar(car)){
-             //       GAME.canvasContext.fillStyle = "#FFFF0077";
-             //       GAME.canvasContext.fillRect(point.x*GAME.mapRatio, point.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
-                }
+                // for(let point of CollisionDetector.mapCoordsSeenByCar(car)){
+                //    GAME.canvasContext.fillStyle = "#FFFF0077";
+                //    GAME.canvasContext.fillRect(point.x*GAME.mapRatio, point.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+                // }
                 
                 // Draw an arrow
                 GAME.canvasContext.fillStyle = "#FF00AA";
@@ -69,7 +67,7 @@ function drawMap(thickData, answerCommand, route){
                 toy = GAME.mapRatio*normals[car.direction].y + fromy;
                 canvas_arrow(GAME.canvasContext, fromx + 0.5*GAME.mapRatio, fromy + 0.5*GAME.mapRatio, tox + 0.5*GAME.mapRatio, toy + 0.5*GAME.mapRatio, 0.5*GAME.mapRatio);
                 
-                GAME.canvasContext.fillStyle = "#2196F388";
+                GAME.canvasContext.fillStyle = "#FF00AA";
                 GAME.canvasContext.fillRect(car.pos.x*GAME.mapRatio,car.pos.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
             }
         });

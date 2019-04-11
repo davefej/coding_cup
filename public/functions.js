@@ -6,9 +6,12 @@ window.GAME = {
     canvasContext:undefined,
     pathFinder:undefined,
     graph:createGraph(),
+    myCarId: undefined,
     myCar: undefined,
+    myPassengerId: undefined,
     myPassenger: undefined,
-    lastLife: undefined
+    lastLife: undefined,
+    lastTickData: undefined
 };
 
 var POLL = false;
@@ -32,6 +35,12 @@ function pollThickFromServer(){
                 stopGame();
                 return;
             }
+
+            if(data.thick){
+                GAME.myCarId = data.thick.request_id.car_id;
+                GAME.myCar = data.thick.cars.find(function(c) {return c.id === GAME.myCarId});
+            }
+            
             // console.log("---------LÉPÉS "+data.thick.request_id.tick+" -----------");
             // console.log(data.thick.cars[0]);
             // console.log(data.sent);
@@ -43,27 +52,34 @@ function pollThickFromServer(){
             /**
              * Test car collision logic
              */
-            if (GAME.myCar && data.thick){
-                var danger = CollisionDetector.isDanger(GAME.myCar, data.thick);
-                    if(danger){
-                        console.error("Danger:\n");
-                        console.error(danger);
-                        // console.log("Tickdta: \n");
-                        // console.log(data.thick);
-                        // stopGame();
-                        // alert("isDangerV3");
-                    }
-            }
-            if(GAME.myCar && data.thick){
-                if(!GAME.lastLife){
-                    GAME.lastLife = GAME.myCar.life;
-                }else if(GAME.myCar.life != GAME.lastLife){
-                        console.error("Life point was lost !!!");
-                        //stopGame();
-                        //alert("Life point was lost !!!");
-                }
-            }
-            
+            // if (GAME.myCar && data.thick){
+            //     var danger = CollisionDetector.isDanger(GAME.myCar, data.thick);
+            //     if(danger){
+            //         console.error("Danger:\n");
+            //         console.error(danger);
+            //     }
+            // }
+            // if(GAME.myCar && data.thick){
+            //     if(!GAME.lastLife){
+            //         GAME.lastLife = GAME.myCar.life;
+            //         if(!GAME.lastTickData){
+            //             GAME.lastTickData = data.thick;
+            //         }
+            //     }else if(GAME.myCar.life != GAME.lastLife){
+            //         GAME.lastLife = GAME.myCar.life;
+            //         var dangerl = CollisionDetector.isDanger(GAME.myCarId, GAME.lastTickData)
+            //         var danger = CollisionDetector.isDanger(GAME.myCarId, data.thick);
+            //         console.error("Life point was lost!\nLast tick: ",
+            //                       GAME.lastTickData,
+            //                       "\nTick:",
+            //                       data.thick,
+            //                       "\nCollisionDetector Result For last tick:",
+            //                       dangerl,
+            //                       "\nCollisionDetector Result For this tick:",
+            //                       danger);
+            //     }
+            // }
+            // GAME.lastTickData = data.thick;
         },
         error: function(data) {            
             console.error("Game finished with error!",data);            
