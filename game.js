@@ -11,7 +11,7 @@ module.exports  = {
     calculateNextStep(thickData){             
         driver.updateCar(thickData);
         //console.log(driver.carPos(),driver.carDirection());
-        driver.checkStateChange();
+        driver.checkStateChange(thickData);
         if(driver.free()){
             driver.goForPassenger(dispatcher.nextPassenger(driver.carPos(),thickData.passengers));
         }
