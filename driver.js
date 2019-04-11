@@ -66,12 +66,19 @@ module.exports = {
     isWaitingIn(){
         return state == WAITINGIN;
     },
-    checkStateChange(){
+    checkStateChange(thick){
         if((this.goingForPassenger() || this.isWaitingIn()) && car.passenger_id){
             if(car.passenger_id == currentPassenger.id){
                 this.passengerPicked();
             }else{
-                throw Error("Wrong passanger picked! " + car.passenger_id + " " + currentPassenger.id);
+                console.warn("Wrong passanger picked! " + car.passenger_id + " " + currentPassenger.id);
+                for(var i = 0; i <thick.passengers.length; i++){
+                    if(thick.passengers[i],id == car.passenger_id){
+                        currentPassenger = thick.passengers[i];
+                        console.warn("Wrong passenger now Updated");
+                        break;
+                    }
+                }                
             }            
         }else{
             if(this.isWaitingOut() && !car.passenger_id){
