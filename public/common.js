@@ -106,7 +106,7 @@ calcWeight = function(from,dest,distance){
     }
 
     if(distance > 5){
-        return 5 + Math.floor((distance-5) / 2);
+        return 5 + Math.floor((distance-5) / 3);
     }else{
         return distance;
     }
