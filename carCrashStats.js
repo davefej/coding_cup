@@ -1,7 +1,10 @@
 var fs = require('fs');
 var base = '/Users/nagydaniel/Documents/Munka/asseco/coding_cup/logs/'
 var files = ['status_log_12925', 'status_log_12928', 'status_log_12934', 'status_log_12939', 'status_log_12944',
-             'status_log_12955', 'status_log_12964', 'status_log_12966', 'status_log_12973', 'status_log_13086'];
+            'status_log_12955', 'status_log_12964', 'status_log_12966', 'status_log_12973', 'status_log_13086',
+            'status_log_13367', 'status_log_13368', 'status_log_13370', 'status_log_13371', 'status_log_13372',
+            'status_log_13373', 'status_log_13375', 'status_log_13376', 'status_log_13378', 'status_log_13380',
+            'status_log_13383', 'status_log_13384', 'status_log_13389', 'status_log_13395', 'status_log_13397'];
 
 function isEqualByFields(a, b, fields){
     if (!fields){
