@@ -390,8 +390,8 @@ function manageSituation(myCarId, tickData){
 
     function relativeSpeed(car) {
         return {
-            x: car.speed*normals[car.direction].x - myCar.speed*normals[myCarl.direction].x,
-            x: car.speed*normals[car.direction].y - myCar.speed*normals[myCarl.direction].y
+            x: car.speed*normals[car.direction].x - myCar.speed*normals[myCar.direction].x,
+            x: car.speed*normals[car.direction].y - myCar.speed*normals[myCar.direction].y
         }
     }
 
@@ -418,7 +418,7 @@ function manageSituation(myCarId, tickData){
                 }
             }
         }
-        return NO_OP;
+        return undefined;
     }
 }
 

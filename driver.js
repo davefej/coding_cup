@@ -1,11 +1,14 @@
 ASZFALT = "S"; ZEBRA = "Z"; JÁRDA = "P";FŰ = "G"; ÉPÜLET = "B"; FA = "T"; LEFT = "<"; RIGHT = ">"; UP = "^"; DOWN = "v";
 NO_OP = "NO_OP"; ACCELERATION = "ACCELERATION"; DECELERATION = "DECELERATION";
 CAR_INDEX_LEFT = "CAR_INDEX_LEFT"; CAR_INDEX_RIGHT = "CAR_INDEX_RIGHT"; CLEAR = "CLEAR";
-FULL_THROTTLE = "FULL_THROTTLE";EMERGENCY_BRAKE = "EMERGENCY_BRAKE"; GO_LEFT = "GO_LEFT"; GO_RIGHT = "GO_RIGHT";
+FULL_THROTTLE = "FULL_THROTTLE"; EMERGENCY_BRAKE = "EMERGENCY_BRAKE"; GO_LEFT = "GO_LEFT"; GO_RIGHT = "GO_RIGHT";
 
 const FREE = 1, HASPASSENGER = 2, GOINGFORPASSENGER = 3, WAITINGIN = 4,WAITINGOUT =5;
 var routePoints, car, state = FREE, currentPassenger, waze,stepLog;
 var teleporting = 0;
+
+var CollisionDetector = require("./public/collisionDetector.js");
+
 module.exports = {
     setPathFinder(pathFinder){
         waze = pathFinder;
@@ -98,7 +101,12 @@ module.exports = {
     reset(){
         car = undefined;
     },
-    calcNextCommand(lastCommand){
+    calcNextCommand(lastCommand, tickData){
+        var cmdColl = CollisionDetector.manageSituation(car.id, tickData);
+        if (cmdColl != undefined) {
+            console.warn("SATUFÉK NYOMVA");
+            return cmdColl;
+        }
         var futureCar = futureCarPos(car,lastCommand);
         car.futureCar = futureCar;
         if(this.isWaiting()){

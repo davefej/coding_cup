@@ -16,7 +16,7 @@ module.exports  = {
             driver.goForPassenger(dispatcher.nextPassenger(driver.carPos(),thickData.passengers));
         }
         aktRoute = driver.getRoutePoints();
-        let command = driver.calcNextCommand(lastCommand);
+        let command = driver.calcNextCommand(lastCommand, thickData);
         log = driver.commandLog();
         lastCommand = command;
         return {
