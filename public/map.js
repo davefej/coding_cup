@@ -167,7 +167,19 @@ function drawLine(from,to){
     GAME.canvasContext.lineTo(to.x*GAME.mapRatio + b, to.y*GAME.mapRatio + b);
     GAME.canvasContext.stroke();
     GAME.canvasContext.beginPath();
-    canvas_arrow(GAME.canvasContext, from.x*GAME.mapRatio + b, from.y*GAME.mapRatio + b, to.x*GAME.mapRatio + b, to.y*GAME.mapRatio + b, b);    
-    //GAME.canvasContext.arc(to.x*GAME.mapRatio+b, to.y*GAME.mapRatio+b, b, 0, 2 * Math.PI);
+    canvas_arrow(GAME.canvasContext, from.x*GAME.mapRatio + b, from.y*GAME.mapRatio + b, to.x*GAME.mapRatio + b, to.y*GAME.mapRatio + b, b);
     GAME.canvasContext.fill();
 }
+
+function drawDirectionArrow(pos,direction){
+    GAME.canvasContext.fillStyle = "#FFFF00";
+    fromx = Number(pos.x)*GAME.mapRatio;
+    fromy = Number(pos.y)*GAME.mapRatio;
+    tox = GAME.mapRatio*normals[direction].x + fromx;
+    toy = GAME.mapRatio*normals[direction].y + fromy;
+   
+    canvas_arrow(GAME.canvasContext, fromx + 0.5*GAME.mapRatio, fromy + 0.5*GAME.mapRatio, tox + 0.5*GAME.mapRatio, toy + 0.5*GAME.mapRatio, 0.5*GAME.mapRatio);
+}
+
+
+

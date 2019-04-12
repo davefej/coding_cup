@@ -1,4 +1,6 @@
 var calledList = [];
+var calledList2 = [];
+var DIRECTIONMATRIX = {};
 var RIGHT_FOLLOW = false;
 pathFinder = null;
 graph = null;
@@ -7,6 +9,8 @@ LEFT = "<"; RIGHT = ">"; UP = "^"; DOWN = "v";
 buildGraph = function(){
     graph = createGraph();
     calledList = [];    
+    calledList2 = [];
+    directionMatrixBuilder();
     graphBuilder_R();
     addRotations();
 
@@ -294,6 +298,8 @@ function graphBuilder_R(){
     }
 }
 
+
+
 function findStreets_RIGHT(from,direction){
     if(!isAszfalt(from)){
         return;
@@ -461,4 +467,79 @@ function isRSD(from,direction) {
         //console.info("Not RSD " + JSON.stringify(from));
     }
     return null;
+}
+
+function directionMatrixBuilder(){
+    for(var i = 0; i < GAME.gameMatrix.length; i++){
+        for(var j = 0; j < GAME.gameMatrix.length; j++){
+            var point = {
+                x:j,
+                y:i
+            };
+            var ret = isRSD(point);
+            if(ret){
+                createDirectionMatrix({
+                        x:ret.x,
+                        y:ret.y
+                    },
+                    ret.dir
+                );
+            }
+        }
+    }
+}
+
+function createDirectionMatrix(from,direction){    
+    if(!isAszfalt(from)){
+        return;
+    }
+    var str = from.i+":"+from.j+"_"+direction;
+    if(calledList2.indexOf(str) > -1){
+        return;
+    }
+    calledList2.push(str);
+    if(!DIRECTIONMATRIX[from.y+":"+from.x]){
+        DIRECTIONMATRIX[from.y+":"+from.x] = [direction];        
+    }else{
+        DIRECTIONMATRIX[from.y+":"+from.x].push(direction);
+    }
+    
+    var curveDirection = rightNarrowCurve(from,direction);
+    if(curveDirection){        
+        //TODO ADD RIGHT DIRECTION
+        createDirectionMatrix(curveDirection.point,curveDirection.direction);
+    }else if(isAszfalt(nextPoint(from,direction,1))){
+        //TODO ADD FORWARD DIRECTION
+        createDirectionMatrix(nextPoint(from,direction,1),direction);
+    }else if(!isAszfalt(nextPoint(from,clockWiseDir(direction),1)) && (isAszfalt(nextPoint(from,countedClockWiseDir(direction),1)))){
+        //TODO ADD LEFT ROTATION
+        createDirectionMatrix(from,countedClockWiseDir(direction));        
+    }
+}
+
+function drawAnimatedArrows(){
+    var matrix = JSON.parse(JSON.stringify(DIRECTIONMATRIX));
+    drawNextDirection(matrix)
+    for(var pos in DIRECTIONMATRIX){
+        
+    }
+}
+
+function drawNextDirection(matrix){
+    var keys = Object.keys(matrix);
+    if(keys.length > 0){
+        var pos = keys[0];
+        var x = pos.split(":")[1];
+        var y = pos.split(":")[0];
+        var dir;
+        while(dir = matrix[pos].pop()){
+            var newPostForDraw = nextPoint(normalizePoint({x:x,y:y}),dir,-1);
+            drawDirectionArrow(normalizePoint(newPostForDraw),dir);  
+        }                       
+        delete matrix[keys[0]];
+        setTimeout(function(){
+            drawNextDirection(matrix)
+        },document.getElementById("stepdelay").value)
+    }
+    
 }
