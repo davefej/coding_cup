@@ -25,6 +25,7 @@ function copyWithFields(a, fields){
     }
     return o;
 }
+
 function filterForLifeLosses(data){
     if(data.length < 2){
         return;
@@ -99,12 +100,6 @@ for(const entry of filtered_2){
         });
     }
 }
-
-// for(const entry of filtered_2){
-//     var obj = copyWithFields(entry);
-//     var key = JSON.stringify(obj)
-//     counts_2[key]['value'] = 1 + (counts_2[key]['value'] || 0);
-// }
 
 var f1File = base+'car_crash_stats';
 var f2File = base+'car_crash_stats_2tick';
