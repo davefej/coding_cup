@@ -73,7 +73,7 @@ module.exports = {
             }else{
                 console.warn("Wrong passanger picked! " + car.passenger_id + " " + currentPassenger.id);
                 for(var i = 0; i <thick.passengers.length; i++){
-                    if(thick.passengers[i],id == car.passenger_id){
+                    if(thick.passengers[i].id == car.passenger_id){
                         currentPassenger = thick.passengers[i];
                         console.warn("Wrong passenger now Updated");
                         break;
@@ -212,15 +212,27 @@ module.exports = {
             }
         }else if(car.speed == 2){
             if(futureCar.speed == 2 && distanceToNode <= 5){
-                if(distanceToNode <=3){
+                if(distanceToNode <=2){
                     console.warn("Túl gyorsan közelítjük meg a kanyart");
                 }
                 return DECELERATION;
             }else{
-                return NO_OP;
+                if(futureCar.speed < 3 && distanceToNode >= 12){
+                    return ACCELERATION;
+                }else{
+                    return NO_OP;
+                }
+                
             }            
+        }else if(car.speed == 3){
+            console.log("Hárommal megyünk!!")
+            if(futureCar.speed == 3 && distanceToNode <= 9){                
+                return DECELERATION;
+            }else{
+                return NO_OP;
+            }
         }else{
-            throw Error("Egyelőre csak max 2 vel mehetünk");
+            throw Error("Egyelőre csak max 3 vel mehetünk");
         }
     }
 };

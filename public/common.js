@@ -85,7 +85,7 @@ isAszfalt = function(point){
     try{
         return GAME.gameMatrix[point.i][point.j] == ASZFALT || GAME.gameMatrix[point.i][point.j] == ZEBRA;
     }catch(e){
-        console.warn("Isaszfalt outofbound")
+        //console.warn("Isaszfalt outofbound")
     }
 }
 
@@ -94,7 +94,7 @@ isJarda = function(point){
     try{
         return GAME.gameMatrix[point.i][point.j] == JÁRDA;
     }catch(e){
-        console.warn("Outofbound JÁRDA")
+        //console.warn("Outofbound JÁRDA")
         return false;
     }    
 }
@@ -313,7 +313,7 @@ function findStreets_RIGHT(from,direction){
             if(!isAszfalt(nextPoint(from,direction,i+2))){
                 if(isAszfalt(nextPoint(to,clockWiseDir(direction),1))){                    
                     if(isAszfalt(nextPoint(nextPoint(from,direction,i-1),clockWiseDir(direction),1))){
-                        console.error("Not GOOD street",from,to)
+                        //console.error("Not GOOD street",from,to)
                         break;
                     }                    
                 }        
@@ -330,7 +330,7 @@ function findStreets_RIGHT(from,direction){
     }else{
         if(!isAszfalt(nextPoint(from,clockWiseDir(direction),1))){
             if(isAszfalt(nextPoint(from,countedClockWiseDir(direction),1))){
-                console.warn("COUNTED CLOCKWISE DIR!!");
+                //console.warn("COUNTED CLOCKWISE DIR!!");
                 findStreets_RIGHT(from,countedClockWiseDir(direction));
             }
         }
@@ -458,7 +458,7 @@ function isRSD(from,direction) {
             dir: LEFT
         };
     } else {
-        console.info("Not RSD " + JSON.stringify(from));
+        //console.info("Not RSD " + JSON.stringify(from));
     }
     return null;
 }

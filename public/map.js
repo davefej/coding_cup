@@ -8,6 +8,7 @@ function drawMap(thickData, answerCommand, route){
         document.getElementById("transportednum").innerHTML = GAME.myCar.transported;
         document.getElementById("life").innerHTML = GAME.myCar.life;
         document.getElementById("gameid").innerHTML = thickData.request_id.game_id;
+        document.getElementById("Transported_Thick").innerHTML = Math.round(Number(thickData.request_id.tick)/Number(GAME.myCar.transported));
     }
     // Ha szallitok utast
     if(GAME.myCar && GAME.myCar.passenger_id && thickData.passengers){

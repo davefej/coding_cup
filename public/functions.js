@@ -159,11 +159,16 @@ function refreshOldGames(){
 function createGameDiv(game){
     var container = document.createElement("tr");
     var id = document.createElement("td");
-    id.innerHTML = game[0].thick.request_id.game_id;
+    if(game[0].thick){
+        id.innerHTML = game[0].thick.request_id.game_id;
+    }
+    
     container.appendChild(id);    
     var points = document.createElement("td");
-    var mycar = game[game.length-1].thick.cars.find(function(c) {return c.id === game[0].thick.request_id.car_id});
-    points.innerHTML = mycar.transported;
+    if(game[0].thick){
+        var mycar = game[game.length-1].thick.cars.find(function(c) {return c.id === game[0].thick.request_id.car_id});  
+       points.innerHTML = mycar.transported;
+    }
     container.appendChild(points);
     
     var playtd = document.createElement("td");
