@@ -73,7 +73,7 @@ module.exports = {
             }else{
                 console.warn("Wrong passanger picked! " + car.passenger_id + " " + currentPassenger.id);
                 for(var i = 0; i <thick.passengers.length; i++){
-                    if(thick.passengers[i],id == car.passenger_id){
+                    if(thick.passengers[i].id == car.passenger_id){
                         currentPassenger = thick.passengers[i];
                         console.warn("Wrong passenger now Updated");
                         break;
