@@ -179,6 +179,7 @@ function getStatus(myCarId, tickData){
     return {
         speed: myCar.speed,
         life: myCar.life,
+        pos: myCar.pos,
         direction: myCar.direction,
         relativePoints: points
     };
