@@ -105,6 +105,12 @@ function getColorByField(field){
             return "#b65265";
         case FA:
             return "#1c6718";
+        case SÍN:
+            return "#424242";
+        case VASUTAUTO:
+            return "#a27048";
+        case VASUTZEBRA:
+            return "#FFFFFF";
     }
 }
 
