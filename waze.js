@@ -1,12 +1,16 @@
 ngraphPath = require('ngraph.path');
 createGraph = require('ngraph.graph');
 require('./public/common.js');
+var robiBuilder = require('./public/robiGraph.js');
 graph = null;
 pathFinder = null;
 
 module.exports  = {
     build(){
-        buildGraph();        
+        var P = {};
+        P.ctx = {};
+        graph = createGraph();
+        robiBuilder.buildMap(P);        
     },
     navigate(from,to){       
         var nodes = makePathFinding(from,to);       

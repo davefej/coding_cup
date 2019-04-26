@@ -87,7 +87,7 @@ function nextPoint(point,dir,distance){
 isAszfalt = function(point){
     point = normalizePoint(point);
     try{
-        return GAME.gameMatrix[point.i][point.j] == ASZFALT || GAME.gameMatrix[point.i][point.j] == ZEBRA;
+        return GAME.gameMatrix[point.i][point.j] == ASZFALT || GAME.gameMatrix[point.i][point.j] == ZEBRA || GAME.gameMatrix[point.i][point.j] == VASUTAUTO;
     }catch(e){
         //console.warn("Isaszfalt outofbound")
     }
@@ -542,4 +542,44 @@ function drawNextDirection(matrix){
         },document.getElementById("stepdelay").value)
     }
     
+}
+
+function GetTrainPositions(tickid){
+  var retval = [
+      {"x":0,"y":0,"endX":0,"endY":0,"isOnMap":false},
+      {"x":0,"y":0,"endX":0,"endY":0,"isOnMap":false},
+      {"x":0,"y":0,"endX":0,"endY":0,"isOnMap":false},
+      {"x":0,"y":0,"endX":0,"endY":0,"isOnMap":false},
+    ] 
+  if(tickid < 2) { 
+      return retval; 
+    }
+  //észak, és déli vasút   
+  retval[0].y = 5;
+  retval[0].endY = 5;  
+  retval[2].y = 54;
+  retval[2].endY = 54;
+  
+  retval[0].x = 0 + ((tickid-2) % 50) * 3;
+  retval[0].endX = -10 + ((tickid-2) % 50) * 3;
+  retval[2].x = 59 - ((tickid-2) % 50) * 3;
+  retval[2].endX = 69 - ((tickid-2) % 50) * 3;
+  retval[0].isOnMap = ((retval[0].x > 0) && (retval[0].x<60)) || ((retval[0].endX > 0) && (retval[0].endX<60))
+  retval[2].isOnMap = ((retval[2].x > 0) && (retval[2].x<60)) || ((retval[2].endX > 0) && (retval[2].endX<60))
+
+  //Kelet-nyugati vonal
+  retval[1].x = 5;
+  retval[3].endX = 5;
+  retval[3].x = 54;
+  retval[3].endX = 54;
+  
+  retval[1].y = 0 + ((tickid-2) % 50) * 3;
+  retval[1].endY = -10 + ((tickid-2) % 50) * 3;
+  retval[3].y = 59 - ((tickid-2) % 50) * 3;
+  retval[3].endY = 69 - ((tickid-2) % 50) * 3;
+  
+  retval[0].isOnMap = ((retval[0].y > 0) && (retval[0].y<60)) || ((retval[0].endY > 0) && (retval[0].endY<60))
+  retval[2].isOnMap = ((retval[2].y > 0) && (retval[2].y<60)) || ((retval[2].endY > 0) && (retval[2].endY<60))
+
+  return retval;
 }

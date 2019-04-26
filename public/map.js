@@ -1,5 +1,6 @@
 
 function drawMap(thickData, answerCommand, route){
+    var trains = undefined;
     GAME.canvasContext.fillStyle = "#ffffff";
     GAME.canvasContext.fillRect(0,0,GAME.gameMatrix[0].length,GAME.gameMatrix.length);
     if (thickData){
@@ -9,7 +10,10 @@ function drawMap(thickData, answerCommand, route){
         document.getElementById("life").innerHTML = GAME.myCar.life;
         document.getElementById("gameid").innerHTML = thickData.request_id.game_id;
         document.getElementById("Transported_Thick").innerHTML = Math.round(Number(thickData.request_id.tick)/Number(GAME.myCar.transported));
+        trains = GetTrainPositions(thickData.request_id.tick);
     }
+    
+    
     // Ha szallitok utast
     if(GAME.myCar && GAME.myCar.passenger_id && thickData.passengers){
         GAME.myPassenger = thickData.passengers.find(function(o){ return o.id == GAME.myCar.passenger_id });
@@ -72,6 +76,28 @@ function drawMap(thickData, answerCommand, route){
                 GAME.canvasContext.fillRect(car.pos.x*GAME.mapRatio,car.pos.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
             }
         });
+        //Draw trains
+        if(trains){
+            GAME.canvasContext.fillStyle = "#FF00AA";
+            if(trains[0].isOnMap){
+                for(let wagon = trains[0].x; ((wagon >= trains[0].endX)||(wagon >= 0)), wagon--;)
+                {                
+                    GAME.canvasContext.fillRect(wagon*GAME.mapRatio,trains[0].y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+                }
+            };
+            if(trains[1].isOnMap){
+                
+            };
+            if(trains[2].isOnMap){
+                for(let wagon = trains[2].x; ((wagon <= trains[2].endX)||(wagon <= 60)), wagon++;)
+                {                
+                    GAME.canvasContext.fillRect(wagon*GAME.mapRatio,trains[2].y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+                }
+            };
+            if(trains[3].isOnMap){
+                
+            };
+        }        
     }
     if(route && route.length >=1){
         GAME.canvasContext.lineWidth = 3;

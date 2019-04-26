@@ -5,7 +5,7 @@ var fs = require('fs');
 var client;
 
 const local = false;
-var IP = local ? '127.0.0.1' : '31.46.64.35';
+var IP = local ? '127.0.0.1' : '10.100.1.150';
 var PORT = local ? 1337 : 12323;
 
 var server;
@@ -53,7 +53,7 @@ function createServer(){
          * Load a saved game
          */
         let firstReqest = true;
-        const gameLogFile='./logs/log_17532';
+        const gameLogFile='./logs/log_13086';
         var savedTicks = JSON.parse(fs.readFileSync(gameLogFile));
         
         const fakeGameId = Math.floor(Math.random()*1e8 + 1e7);
