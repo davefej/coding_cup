@@ -5,7 +5,7 @@ var fs = require('fs');
 var client;
 
 const local = false;
-var IP = local ? '127.0.0.1' : '31.46.64.35';
+var IP = local ? '127.0.0.1' : '10.100.1.150';
 var PORT = local ? 1337 : 12323;
 
 var server;
