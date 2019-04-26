@@ -10,8 +10,8 @@ module.exports = {
         console.log("Searching for next passenger..")        
         var before = new Date();  
         var passenger;
-        passenger = salesMan(carPos,passengersList);        
-        //passenger = findClosestPassanger(carPos,passengersList);
+        //passenger = salesMan(carPos,passengersList);        
+        passenger = findClosestPassanger(carPos,passengersList);
         console.log("Walking salesman: "+(new Date()-before)+" milliseconds");
         return passenger;
     }
@@ -23,7 +23,6 @@ function dummyClosest(carPos,passengersList){
 }
 
 function findClosestPassanger(carPos,passengersList){
-    
     let shortestDistance,passenger;
     for(var i = 0; i < passengersList.length; i++){
         var distanceToPassenger = waze.calcDistance(carPos,passengersList[i].pos);
@@ -33,8 +32,7 @@ function findClosestPassanger(carPos,passengersList){
             shortestDistance = currentDistance;
             passenger = passengersList[i];
         }
-    }
-    
+    }    
     return passenger;
 }
 

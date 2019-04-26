@@ -10,7 +10,13 @@ module.exports  = {
         var P = {};
         P.ctx = {};
         graph = createGraph();
-        robiBuilder.buildMap(P);        
+        robiBuilder.buildMap(P);  
+        pathFinder = ngraphPath.aStar(graph, {
+            oriented: true,
+            distance(fromNode, toNode, link) {
+                return link.data.weight;
+            }
+        });        
     },
     navigate(from,to){       
         var nodes = makePathFinding(from,to);       
@@ -34,23 +40,36 @@ function makePathFinding(from,to){
     var fromAszfalt = nearestAszfaltIfJarda(from);
     var toAszfalt = nearestAszfaltIfJarda(to);
     try{
-        var nodes = pathFinder.find(fromAszfalt.y+":"+fromAszfalt.x,toAszfalt.y+":"+toAszfalt.x);
+        var nodes = pathFinder.find(fromAszfalt.x+":"+fromAszfalt.y,toAszfalt.x+":"+toAszfalt.y);
+        var newNodes = [];
+        for(var i = 0; i < nodes.length; i++){
+            var split = nodes[i].id.split(":");
+            var str = split[1]+":"+split[0];
+            if(split.length > 2){
+                str += ":"+split[2];
+            }
+            newNodes.push({id:str})
+        }
+
+
     }catch(e){
-        throw Error("Nem Útra útkeresés "+fromAszfalt.y+":"+fromAszfalt.x+" "+toAszfalt.y+":"+toAszfalt.x)
+        console.error("Nem Útra útkeresés "+fromAszfalt.y+":"+fromAszfalt.x+" "+toAszfalt.y+":"+toAszfalt.x)
+        throw Error(e);
+        
     }
     if(fromAszfalt.jardaToGO){
         console.warn("JARDATOGO!! fromAszfalt",fromAszfalt);
-        nodes.push({id:fromAszfalt.jardaToGO.y+":"+fromAszfalt.jardaToGO.x})
+        newNodes.push({id:fromAszfalt.jardaToGO.y+":"+fromAszfalt.jardaToGO.x})
     }
     if(toAszfalt.jardaToGO){
         console.warn("JARDATOGO!! toAszfalt",toAszfalt);
-        nodes.unshift({id:toAszfalt.jardaToGO.y+":"+toAszfalt.jardaToGO.x})
+        newNodes.unshift({id:toAszfalt.jardaToGO.y+":"+toAszfalt.jardaToGO.x})
     }
-    if(nodes.length == 0){
+    if(newNodes.length == 0){
         console.warn("Rossz útvonal liks", graph.getLinks(fromAszfalt.y+":"+fromAszfalt.x), graph.getLinks(toAszfalt.y+":"+toAszfalt.x));
         throw Error("Rossz útvonal!!!"+from.y+":"+from.x+" "+to.y+":"+to.x+" "+fromAszfalt.y+":"+fromAszfalt.x+" "+toAszfalt.y+":"+toAszfalt.x);
     }
-    return nodes;
+    return newNodes;
 }
 
 function nearestAszfaltIfJarda(point){
@@ -118,10 +137,15 @@ function formatNodeList(nodes){
     var ret = [];
     for(var i = nodes.length -1; i >= 0; i--){
         var positions = nodes[i].id.split(":");
-        ret.push({
+        var pos = {
             x:parseInt(positions[1]),
             y:parseInt(positions[0])
-        });
+        };
+        if (positions.length > 2 && positions[2] == "c") {
+            pos.rev = 1;
+            ret.pop();
+        }
+        ret.push(pos);
     }
     var resultArr = [];
     resultArr.push(ret[0]);
