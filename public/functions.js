@@ -36,7 +36,7 @@ function pollThickFromServer(){
             console.log(data.sent);
             console.log(data.info);
             repeatAfterDelay();
-            drawMap(data.thick,data.sent.command);
+            drawMap(data.thick,data.sent.command,data.info.route);
             window.steps.push(data);
         },
         error: function(data) {            
@@ -93,7 +93,7 @@ for(var i = 0; i < mapRows.length; i++){
 
 
 
-function drawMap(thickData,answerCommand){
+function drawMap(thickData,answerCommand,route){
     GAME.canvasContext.fillStyle = "#ffffff";
     GAME.canvasContext.fillRect(0,0,GAME.gameMatrix[0].length,GAME.gameMatrix.length);
     if (thickData){
@@ -150,6 +150,18 @@ function drawMap(thickData,answerCommand){
             GAME.canvasContext.fillStyle = "#2196F388";
             GAME.canvasContext.fillRect(car.pos.x*GAME.mapRatio,car.pos.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
         });
+    }
+	if(route){
+        for(var i = 0; i < route.length-1; i++){
+            var moveby = (GAME.mapRatio/2);
+            GAME.canvasContext.beginPath();
+            GAME.canvasContext.moveTo(route[i].x*GAME.mapRatio+moveby, route[i].y*GAME.mapRatio+moveby);
+            GAME.canvasContext.lineTo(route[i+1].x*GAME.mapRatio+moveby, route[i+1].y*GAME.mapRatio+moveby);
+            GAME.canvasContext.lineWidth = 3;
+            // set line color
+            GAME.canvasContext.strokeStyle = '#FDD55C';
+            GAME.canvasContext.stroke();
+        }
     }
     
 }
