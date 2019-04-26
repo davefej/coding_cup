@@ -13,20 +13,25 @@ app.use(express.static('public'));
 app.use(express.json());
 
 const USE_CLIENT = true;
-const stepTimeOut = 50;//millisec
+const stepTimeOut = 0;//millisec
+const ELES = true;
 
 lastThickTime = new Date();
 
 app.post('/startorstop', function(req, res){    
     if(!RUNNING){
-        tcp.connect(onJsonMessage,onCloseMessage);
+        onConnect = function(){
+            setTimeout(function(){                 
+                //initial message
+                lastThickTime = new Date();
+                console.log("Sending first message");
+                tcp.sendJson(game.getFirstMessage(ELES));
+            },100);
+        };
+        tcp.connect(onJsonMessage,onCloseMessage,onConnect);
         GAMNELOG = [];
         CAR_STATUS_LOGS = [];
-        setTimeout(function(){                 
-            //initial message
-            lastThickTime = new Date();
-            tcp.sendJson(game.getFirstMessage());
-        },100);
+        
     }else{
         tcp.close();
     }
@@ -50,8 +55,8 @@ app.get('/loadGames', function(req, res){
 
 onJsonMessage = function(data){
     var thicktime = Math.round((new Date()-lastThickTime));
-    if(thicktime > 100){
-        console.log("Thick Eltelt idő ",thicktime,"[millisec]")    
+    if(thicktime > 150){
+        console.log("Thick Eltelt idő ",thicktime,"[millisec]");
     }    
     lastThickTime = new Date();
     changeDirection(data);
@@ -63,7 +68,7 @@ onJsonMessage = function(data){
     });
     if(data.request_id){
         if(data.request_id.car_id != undefined){
-            CAR_STATUS_LOGS.push(CollisionDetector.getStatus(data.request_id.car_id, data));
+            //CAR_STATUS_LOGS.push(CollisionDetector.getStatus(data.request_id.car_id, data));
         }
     }
     var httpResp = PENDING_HTTP_RESPS.shift();

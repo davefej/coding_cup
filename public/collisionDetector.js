@@ -138,10 +138,13 @@ function isSeen(point, car){
 
 function getStatus(myCarId, tickData){
     var myCar = tickData.cars.find(function(c) {return c.id === myCarId});
+    
     if(!myCar){
+        
         throw Error("Car not found! Car id = ", myCarId);
     }
     if (!GAME.gameMatrix) {
+        
         throw Error("GAME.gameMatrix is not defined");
     }
     var relativePointsSeen = relativeSeenCoordsForDirection(myCar.direction);

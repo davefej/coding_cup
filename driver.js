@@ -1,11 +1,12 @@
 ASZFALT = "S"; ZEBRA = "Z"; JÁRDA = "P";FŰ = "G"; ÉPÜLET = "B"; FA = "T"; LEFT = "<"; RIGHT = ">"; UP = "^"; DOWN = "v";
+SÍN="R", VASUTZEBRA="C", VASUTAUTO="X";
 NO_OP = "NO_OP"; ACCELERATION = "ACCELERATION"; DECELERATION = "DECELERATION";
 CAR_INDEX_LEFT = "CAR_INDEX_LEFT"; CAR_INDEX_RIGHT = "CAR_INDEX_RIGHT"; CLEAR = "CLEAR";
 FULL_THROTTLE = "FULL_THROTTLE"; EMERGENCY_BRAKE = "EMERGENCY_BRAKE"; GO_LEFT = "GO_LEFT"; GO_RIGHT = "GO_RIGHT";
 
-const FREE = 1, HASPASSENGER = 2, GOINGFORPASSENGER = 3, WAITINGIN = 4,WAITINGOUT =5;
+const FREE = 1, HASPASSENGER = 2, GOINGFORPASSENGER = 3, WAITINGIN = 4,WAITINGOUT =5, CRASHED = 6, PASSENGER_LOST = 7;
 var routePoints, car, state = FREE, currentPassenger, waze,stepLog;
-var teleporting = 0;
+var teleporting = 0,rev_direction = false;
 
 var CollisionDetector = require("./public/collisionDetector.js");
 
@@ -70,6 +71,14 @@ module.exports = {
         return state == WAITINGIN;
     },
     checkStateChange(thick){
+
+        if(this.goingForPassenger(),this.isLostPassenger(thick)){
+            currentPassenger = null;
+            state = PASSENGER_LOST;
+            return;
+        }
+
+
         if((this.goingForPassenger() || this.isWaitingIn()) && car.passenger_id){
             if(car.passenger_id == currentPassenger.id){
                 this.passengerPicked();
@@ -89,11 +98,30 @@ module.exports = {
             }
         }
     },
+    isLostPassenger(thick){
+        if(!currentPassenger){
+            return false;
+        }
+        for(var i = 0; i < thick.passengers.length; i++){
+            if(thick.passengers[i].id == currentPassenger.id){
+                return false;
+            }
+        }
+        console.warn("LOst passenger!!!");
+        return true;
+    },
     carPos(){
         return car.pos;
     },
     carDirection(){
         return car.direction;
+    },
+    carLife(){
+        return car.life;
+    },
+    crash(){
+        currentPassenger = null;
+        this.free();
     },
     commandLog(){
         return stepLog;
@@ -101,7 +129,17 @@ module.exports = {
     reset(){
         car = undefined;
     },
+    isLostPassengerState(){
+        return PASSENGER_LOST == state;
+    },
     calcNextCommand(lastCommand, tickData){
+        if(this.isLostPassengerState()){
+            if(car.speed > 0){
+                return DECELERATION;
+            }else{
+                this.goForPassenger(dispatcher.nextPassenger(this.carPos(),tickData.passengers));
+            }
+        }
         var cmdColl = CollisionDetector.manageSituation(car.id, tickData);
         if (cmdColl != undefined) {
             console.warn("SATUFÉK NYOMVA");
@@ -122,9 +160,16 @@ module.exports = {
         if(!isAszfalt(futureCar.pos)){
             //console.warn("Future Pos nem aszfalt")            
         }
+        
         if(isSamepos(futureCar.pos,routePoints[0])){
+            rev_direction = false;
+            if(routePoints[0].rev && routePoints.length > 1){
+                rev_direction = calculateDirection(routePoints[0],routePoints[1]);
+            }
             routePoints.shift();
-            teleporting = 0;
+        }
+        if(rev_direction){
+            console.warn("REVDIRECTIOn");
         }
         var toNode = routePoints[0];
         var nextNode = routePoints[1];        
@@ -136,18 +181,8 @@ module.exports = {
             }
             return DECELERATION;                
         }
-        var distanceToNode = calcPointsDistance(futureCar.pos,toNode);
-        if(isTeleportRoute(futureCar.pos,toNode)){
-            teleporting = 1;
-        }
-        if(teleporting && teleporting < 4){
-            console.log("teleporint")
-            teleporting++;
-            return NO_OP;
-        }else{
-            teleporting = 0;
-        }
-        var directionToNode = calculateDirection(futureCar.pos,toNode);
+        var distanceToNode = calcPointsDistance(futureCar.pos,toNode);        
+        var directionToNode = rev_direction ? rev_direction : calculateDirection(futureCar.pos,toNode);
         var nextNodesDirection = calculateDirection(toNode,nextNode);
 
         car.distanceToNode = distanceToNode;
@@ -192,11 +227,6 @@ module.exports = {
                 //meg fogunk állni
                 return NO_OP;
             }else{
-
-
-                if(isMagicPoints(toNode,nextNode)){
-                   // console.warn("Magic Points");
-                }
 
                 if(distanceToNode == 1){
                     if(nextNode){                        
@@ -291,7 +321,19 @@ function calculateDirection(from,to){
         y:parseInt(to.y)
     };
 
+    if (from.x > to.x) {
+        return from.rev ? RIGHT : LEFT;
+    } else if (from.x < to.x) {
+        return from.rev ? LEFT : RIGHT;
+    } else if (from.y < to.y) {
+        return from.rev ? UP : DOWN;
+    } else if (from.y > to.y) {
+        return from.rev ? DOWN : UP;
+    } else {
+        return null;
+    }
 
+    /*
     if(isTeleportRoute(from,to)){
         console.log("Magic Point direction",from,to);
         if(from.x > to.x){
@@ -315,17 +357,15 @@ function calculateDirection(from,to){
         return UP;
     }else{
         return null;
-    }
+    }*/
 }
 
 function calcPointsDistance(a,b){
     a = normalizePoint(a);
     b = normalizePoint(b);
-    if(isTeleportRoute(a,b)){
-        return Math.min( 60 - (Math.abs(a.x-b.x) + Math.abs(a.y-b.y)),Math.abs(a.x-b.x) + Math.abs(a.y-b.y));
-    }else{
-        return Math.abs(a.x-b.x) + Math.abs(a.y-b.y);
-    }    
+
+    return Math.abs(a.x-b.x) + Math.abs(a.y-b.y);
+    
 }
 
 

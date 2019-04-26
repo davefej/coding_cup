@@ -11,7 +11,7 @@ var PORT = local ? 1337 : 12323;
 var server;
 
 module.exports = {
-    connect(onMessage,onClose){
+    connect(onMessage,onClose,onConnect){
         dev_server_thick_id = 0;
         client = new net.Socket();
         client.pipe(split());
@@ -19,6 +19,7 @@ module.exports = {
         firstReqest = true;
         client.connect(PORT, IP, function() {
             console.log('TCP Client Connected sucessfully');
+            onConnect();
         });
         client.on('data', function(data) {
             onMessage(JSON.parse(data.toString()));
