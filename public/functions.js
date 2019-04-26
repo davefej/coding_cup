@@ -46,7 +46,7 @@ function pollThickFromServer(){
             // console.log(data.sent);
             // console.log(data.info);
             repeatAfterDelay();
-            drawMap(data.thick, data.sent.command, data.info.route);
+            drawMap(data.thick,data.sent.command,data.info.route);
             window.steps.push(data);
 
             /**
