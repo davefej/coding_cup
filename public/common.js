@@ -580,6 +580,7 @@ function GetTrainPositions(tickid){
   
   retval[0].isOnMap = ((retval[0].y > 0) && (retval[0].y<60)) || ((retval[0].endY > 0) && (retval[0].endY<60))
   retval[2].isOnMap = ((retval[2].y > 0) && (retval[2].y<60)) || ((retval[2].endY > 0) && (retval[2].endY<60))
-
+console.log(retval);
   return retval;
+
 }

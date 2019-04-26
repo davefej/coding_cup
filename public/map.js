@@ -80,22 +80,28 @@ function drawMap(thickData, answerCommand, route){
         if(trains){
             GAME.canvasContext.fillStyle = "#FF00AA";
             if(trains[0].isOnMap){
-                for(let wagon = trains[0].x; ((wagon >= trains[0].endX)||(wagon >= 0)), wagon--;)
+                for(let wagon = trains[0].x; ((wagon >= trains[0].endX)); wagon--)
                 {                
                     GAME.canvasContext.fillRect(wagon*GAME.mapRatio,trains[0].y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
                 }
             };
             if(trains[1].isOnMap){
-                
+                for(let wagon = trains[1].y; (wagon <= trains[1].endY); wagon--)
+                {                
+                    GAME.canvasContext.fillRect(trains[1].x*GAME.mapRatio,wagon*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+                }
             };
             if(trains[2].isOnMap){
-                for(let wagon = trains[2].x; ((wagon <= trains[2].endX)||(wagon <= 60)), wagon++;)
+                for(let wagon = trains[2].x; (wagon <= trains[2].endX); wagon++)
                 {                
                     GAME.canvasContext.fillRect(wagon*GAME.mapRatio,trains[2].y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
                 }
             };
             if(trains[3].isOnMap){
-                
+                for(let wagon = trains[1].y; (wagon <= trains[1].endY); wagon++)
+                {                
+                    GAME.canvasContext.fillRect(trains[1].x*GAME.mapRatio,wagon*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
+                }
             };
         }        
     }

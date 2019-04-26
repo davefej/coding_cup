@@ -13,8 +13,8 @@ app.use(express.static('public'));
 app.use(express.json());
 
 const USE_CLIENT = true;
-const stepTimeOut = 0;//millisec
-const ELES = true;
+const stepTimeOut = 200;//millisec
+const ELES = false;
 
 lastThickTime = new Date();
 
