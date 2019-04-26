@@ -1,24 +1,37 @@
 <html>
     <head>
-            <script src="jquery.js"></script>
-            
+            <script src="jquery.js"></script>            
             <script src="graph.js" type="text/javascript"></script>
             <script src="path.js" type="text/javascript"></script>
+            <script src="map.js" type="text/javascript"></script>
             <script src="functions.js" type="text/javascript"></script>
-            
+            <script src="collisionDetector.js" type="text/javascript"></script>
+            <script src="common.js" type="text/javascript"></script>
         <style>
         .equaltd{
             width:25%;
         }
         </style>
+        <style>
+            .button {
+                background-color: #4CAF50; /* Green */
+                border: none;
+                color: white;
+                padding: 15px 32px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                font-size: 16px;
+            }
+        </style>
     </head>
     <body style="text-align:center;">
         <h3 >pParams - Coding Cup</h3>   
         <div>
-            <button id="startorstop" onclick="startOrStop()">Start Game</button>    
+            <button id="startorstop" onclick="startOrStop()" class="button">Start Game</button>    
         </div>         
         <div style="display: flex;">  
-            <div  style="min-width:200px;background-color: lightgrey;">
+            <div  style="min-width:200px;background-color: lightgrey;height:80vh;overflow-y: auto;">
                 <div style="text-align:center; font-size:2em;">Korábbi játékok</div>
                 <div id="oldlistcontainer"style="overflow-y: auto;width:100%">
                     <table id="oldlist" style="width: 100%;">
@@ -36,12 +49,17 @@
                             <th class="equaltd">Step</th>
                             <th class="equaltd">Transported</th>
                             <th class="equaltd">Life</th>
+                            <th class="equaltd">GameId</th>
+                            <th class="equaltd">Thick/Transported</th>
                         </tr>
                         <tr>
                             <td id="thicknum">0</td>
                             <td id="step">0</td>
                             <td id="transportednum">0</td>
                             <td id="life">0</td>
+                            <td id="gameid">0</td>
+                            <td id="Transported_Thick">0</td>
+                            
                         </tr>
                     </table>                        
                 </div>

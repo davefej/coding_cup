@@ -1,17 +1,20 @@
 ASZFALT = "S"; ZEBRA = "Z"; JÁRDA = "P";FŰ = "G"; ÉPÜLET = "B"; FA = "T"; LEFT = "<"; RIGHT = ">"; UP = "^"; DOWN = "v";
 NO_OP = "NO_OP"; ACCELERATION = "ACCELERATION"; DECELERATION = "DECELERATION";
 CAR_INDEX_LEFT = "CAR_INDEX_LEFT"; CAR_INDEX_RIGHT = "CAR_INDEX_RIGHT"; CLEAR = "CLEAR";
-FULL_THROTTLE = "FULL_THROTTLE";EMERGENCY_BRAKE = "EMERGENCY_BRAKE"; GO_LEFT = "GO_LEFT"; GO_RIGHT = "GO_RIGHT";
+FULL_THROTTLE = "FULL_THROTTLE"; EMERGENCY_BRAKE = "EMERGENCY_BRAKE"; GO_LEFT = "GO_LEFT"; GO_RIGHT = "GO_RIGHT";
 
 const FREE = 1, HASPASSENGER = 2, GOINGFORPASSENGER = 3, WAITINGIN = 4,WAITINGOUT =5;
 var routePoints, car, state = FREE, currentPassenger, waze,stepLog;
+var teleporting = 0;
+
+var CollisionDetector = require("./public/collisionDetector.js");
 
 module.exports = {
     setPathFinder(pathFinder){
         waze = pathFinder;
     },
     setRoutePlan(nodeList){
-        routePoints = formatNodeList(nodeList);
+        routePoints = nodeList;
     },
     getRoutePoints(){
         return routePoints
@@ -43,6 +46,7 @@ module.exports = {
     },
     passengerPicked(){
         state = HASPASSENGER;
+        console.log("Passenger picked!")
         this.transportPassenger();
     },
     passangerTransported(){
@@ -65,12 +69,19 @@ module.exports = {
     isWaitingIn(){
         return state == WAITINGIN;
     },
-    checkStateChange(){
+    checkStateChange(thick){
         if((this.goingForPassenger() || this.isWaitingIn()) && car.passenger_id){
             if(car.passenger_id == currentPassenger.id){
                 this.passengerPicked();
             }else{
-                throw Error("Wrong passanger picked! "+car.passenger_id+" "+currentPassenger.id);
+                console.warn("Wrong passanger picked! " + car.passenger_id + " " + currentPassenger.id);
+                for(var i = 0; i <thick.passengers.length; i++){
+                    if(thick.passengers[i].id == car.passenger_id){
+                        currentPassenger = thick.passengers[i];
+                        console.warn("Wrong passenger now Updated");
+                        break;
+                    }
+                }                
             }            
         }else{
             if(this.isWaitingOut() && !car.passenger_id){
@@ -90,7 +101,12 @@ module.exports = {
     reset(){
         car = undefined;
     },
-    calcNextCommand(lastCommand){
+    calcNextCommand(lastCommand, tickData){
+        var cmdColl = CollisionDetector.manageSituation(car.id, tickData);
+        if (cmdColl != undefined) {
+            console.warn("SATUFÉK NYOMVA");
+            return cmdColl;
+        }
         var futureCar = futureCarPos(car,lastCommand);
         car.futureCar = futureCar;
         if(this.isWaiting()){
@@ -104,11 +120,11 @@ module.exports = {
             throw Error("Calculate command in free state");
         }
         if(!isAszfalt(futureCar.pos)){
-            console.warn("Future Pos nem aszfalt")
-            //throw Error("Future Pos nem aszfalt");
+            //console.warn("Future Pos nem aszfalt")            
         }
         if(isSamepos(futureCar.pos,routePoints[0])){
             routePoints.shift();
+            teleporting = 0;
         }
         var toNode = routePoints[0];
         var nextNode = routePoints[1];        
@@ -121,8 +137,22 @@ module.exports = {
             return DECELERATION;                
         }
         var distanceToNode = calcPointsDistance(futureCar.pos,toNode);
+        if(isTeleportRoute(futureCar.pos,toNode)){
+            teleporting = 1;
+        }
+        if(teleporting && teleporting < 4){
+            console.log("teleporint")
+            teleporting++;
+            return NO_OP;
+        }else{
+            teleporting = 0;
+        }
         var directionToNode = calculateDirection(futureCar.pos,toNode);
         var nextNodesDirection = calculateDirection(toNode,nextNode);
+
+        car.distanceToNode = distanceToNode;
+        car.directionToNode = directionToNode;
+        car.nextNodesDirection = nextNodesDirection;
         if(car.speed == 0){ 
             if(futureCar.speed == 0){
                 //MOST INDULUNK!! Futurecar == car!!
@@ -165,7 +195,7 @@ module.exports = {
 
 
                 if(isMagicPoints(toNode,nextNode)){
-                    console.warn("Magic Points");
+                   // console.warn("Magic Points");
                 }
 
                 if(distanceToNode == 1){
@@ -190,34 +220,40 @@ module.exports = {
             }
         }else if(car.speed == 2){
             if(futureCar.speed == 2 && distanceToNode <= 5){
-                if(distanceToNode <=3){
+                if(distanceToNode <=2){
                     console.warn("Túl gyorsan közelítjük meg a kanyart");
                 }
                 return DECELERATION;
             }else{
-                return NO_OP;
+                if(futureCar.speed < 3 && distanceToNode >= 12){
+                    return ACCELERATION;
+                }else{
+                    return NO_OP;
+                }
+                
             }            
+        }else if(car.speed == 3){
+            console.log("Hárommal megyünk!!")
+            if(futureCar.speed == 3 && distanceToNode <= 9){                
+                return DECELERATION;
+            }else{
+                return NO_OP;
+            }
         }else{
-            throw Error("Egyelőre csak max 2 vel mehetünk");
+            throw Error("Egyelőre csak max 3 vel mehetünk");
         }
     }
 };
 
-function isMagicPoints(point1,point2){
-    return isMagicPoint(point1) && isMagicPoint(point2);
-}
 
-function isMagicPoint(point){
-    if(point.x == 2 || point.x == 3 || point.x == 56 || point.x == 57){
-        if(point.y == 2 || point.y == 3 || point.y == 56 || point.y == 57){
-            return true;
-        }
-    }
-    return false;
-}
 
 function isSamepos(pos1,pos2){
-    return pos1.x == pos2.x && pos1.y == pos2.y;
+    try{
+        return pos1.x == pos2.x && pos1.y == pos2.y;
+    }catch(e){
+        console.warn("Issamepos error",pos1,pos2);
+    }
+    
 }
 
 function turnCommandFromDirections(lastDirection,nextDirection){
@@ -256,7 +292,8 @@ function calculateDirection(from,to){
     };
 
 
-    if(calcPointsDistance(from,to) > 52){
+    if(isTeleportRoute(from,to)){
+        console.log("Magic Point direction",from,to);
         if(from.x > to.x){
             return RIGHT;
         }else if(from.x < to.x){
@@ -267,7 +304,6 @@ function calculateDirection(from,to){
             return DOWN;
         }    
     }
-
 
     if(from.x > to.x){
         return LEFT;
@@ -283,30 +319,15 @@ function calculateDirection(from,to){
 }
 
 function calcPointsDistance(a,b){
-    
-    a.x = a.x || a.j;
-    b.y = b.y || b.i;
-
-    if(isMagicPoints(a,b)){
-        console.warn("Magin point distance calculation")
-        return 60 - Math.abs(a.x-b.x) + Math.abs(a.y-b.y);
+    a = normalizePoint(a);
+    b = normalizePoint(b);
+    if(isTeleportRoute(a,b)){
+        return Math.min( 60 - (Math.abs(a.x-b.x) + Math.abs(a.y-b.y)),Math.abs(a.x-b.x) + Math.abs(a.y-b.y));
     }else{
         return Math.abs(a.x-b.x) + Math.abs(a.y-b.y);
-    }
-    
+    }    
 }
 
-function formatNodeList(nodes){
-    var ret = [];
-    for(var i = nodes.length -1; i >= 0; i--){
-        var positions = nodes[i].id.split(":");
-        ret.push({
-            x:positions[1],
-            y:positions[0]
-        });
-    }
-    return ret;
-}
 
 function futureCarPos(car,command){
     car = JSON.parse(JSON.stringify(car));

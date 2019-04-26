@@ -6,13 +6,17 @@ window.GAME = {
     canvasContext:undefined,
     pathFinder:undefined,
     graph:createGraph(),
+    myCarId: undefined,
     myCar: undefined,
-    myPassenger: undefined
+    myPassengerId: undefined,
+    myPassenger: undefined,
+    lastLife: undefined,
+    lastTickData: undefined
 };
 
 var POLL = false;
-const ASZFALT = "S", ZEBRA = "Z", JÁRDA = "P",FŰ = "G", ÉPÜLET = "B", FA = "T";
-const mapstr = "GPSSPGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGPSSPG#PPSSPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPSSPP#SSSSSSSSSSSSSSSSSSSSSSSSSSSSZSSZSSSSSSSSSSSSSSSSSSSSSSSSSSSS#SSSSSSSSSSSSSSSSSSSSSSSSSSSSZSSZSSSSSSSSSSSSSSSSSSSSSSSSSSSS#PPSSPPPZZPPPPPPPPPPPPPPPPPPPPSSPPPPPPPPPPPPPPPPPPPPZZPPPSSPP#GPSSPGPSSPGBBGBBGGBBGGBBGBBGPSSPGBBGBBGGBBGGBBGBBGPSSPBPSSPG#GPSSPBPSSPPPPPPPPPPPPPPPPPPPPSSPPPPPPPPPPPPPPPPPPPPSSPBPSSPG#GPSSPBPSSSSSSSSZSSZSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSPGPSSPG#GPSSPBPSSSSSSSSZSSZSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSPBPSSPG#GPSSPBPSSPPPPPPPSSPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPSSPBPSSPG#GPSSPGPSSSPPGBBPSSPGGGGGBBBBBGPPPPPPPPGGBBBBBBGBBPSSSPGPSSPG#GPSSPBPSSSSPPGBPSSPGTGPPPPPPPPPSSSSSSPPPBBBBBBGBBPSGSPBPSSPG#GPSSPBPPSSSSPPGPSSPGGGPSSSSSSSSSSSSSSSSPPPGGGPPPPPSGSPBPSSPG#GPSSPGGPPSSSSPPPSSPPBBPSSSSSSSSSSPPSSSSSSPPPGPSSSSSGSPGPSSPG#GPSSPGGGPPSSSSPSSSSPPPPSSPSSPPSSPPPPPSSSSSSPPPSSSSSSSPGPSSPG#GPSSPGGGGPPSSSSSBBSSSSSSSSSSPPSSSSSSPPPSSSSSSZSSPPPPPPGPSSPG#GPSSPGGGGGPPSSSSBBSSSSSSSSSSPPSPPPPSSSPPPSSSSZSSPPSSPGGPSSPG#GPSSPGGGGGGPPPPSSSSPPPPPPPPPPPSPPSSSSSSPPPPPPPSSPPSSPTTPSSPG#GPSSPGGGGGGGGGPPSSPPSSSSSSSSGPSSSSPPSSSSPPGTGPSSSSSSPTGPSSPG#GPSSPGGGGGGBBBGPSSSSSSSSSSSSSPPPPPPPPSSSSPPGPPSSSSSSPTTPSSPG#GPSSPGGGGGGBBBGPSSSSSSPPPPSSSSSSSSSSPPSSSSPPPSSSPPPPPTTPSSPG#GPSSPGGGGGGBBBGPSSPPPPPGGPPSSSSSSSSSSPPSSSSPSSSSPBBBBTGPSSPG#GPSSPGPPPPPPPPPPSSPGGGGGGGPPPPPPPPSSSSPPSSSSSSSPPBBBBBGPSSPG#GPSSPGPSSSSSSSSSSSPGGGGGGGGGGGBBGPPSSSSPPSSSSSPPGGGGGGGPSSPG#GPSSPGPSSSSSSSSSSSPGGGGBGGGGGGBBGGPPSSSSPPPPSSSPPPPPPGTPSSPG#GPSSPGPSSPPPPPPPSSPGGGGGGGGGGGGGGGGPPSSSSSSPSSSSSSSSPGTPSSPG#GPSSPGPSSPBGBBBPSSPGGGGGGGGGGPPPPGGGPPSSSSSPPSSSSSSSPGTPSSPG#GPSSPGPSSPBGBBBPSSPGGGGGGGGGPPSSPPGGGPPPPPPPPPPPPPZZPPGPSSPG#GPZZPPPZZPPPPPPPSSPPPPPPPPPPPSSSSPPPPPPPPPPPPPPPPSSSSPPPZZPG#GPSSSSSSSSSSSSSSSSSSSSSSSSSSSSBBSSSSSSSSSSSSSSSSSSBBSSSSSSPG#GPSSSSSSSSSSSSSSSSSSSSSSSSSSSSBBSSSSSSSSSSSSSSSSSSBBSSSSSSPG#GPZZPPPPPPPPPPPPPPPPSSPPPPPPPSSSSPPPPPPPSSPPPPPPPSSSSPPPZZPG#GPSSPGPSSSSPPBBBBPPSSSPGGPPPPPSSPPPPPGGPSSSPPGBBPPSSPPGPSSPG#GPSSPBPSSSSSPBBBBPSSSSPBBPSSSSSSSSSSPGGPSSSSPGBBGPSSPGBPSSPG#GPSSPBPPPSSSPGGGGPSSSPPGGPSSSSSSSSSSPGGPPSSSPGGGGPSSPGBPSSPG#GPSSPGGGPPSSPGGGGPSSPPGGGPSSPPPPPPSSPGGGPPSSPGGGGPSSPGBPSSPG#GPSSPGGBBPSSPGGGGPSSPGGGBPSSPGGGGPSSPGGGGPSSPGGGGPSSPGBPSSPG#GPSSPGGBBPSSPGGGGPSSPGBBBPSSPGGGGPSSPGGGGPSSPGGGGPSSPGBPSSPG#GPSSPGPPPPSSPPPPPPZZPPPPPPZZPPPPPPSSPPPPPPZZPPPPPPZZPPGPSSPG#GPSSPBPSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSZSSZSSSSSSSSPBPSSPG#GPSSPBPSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSZSSZSSSSSSSSPBPSSPG#GPSSPGPSSPPPPPSSPPPPPPPPPPPPZZPPPPPZZPPPPPSSPPPPPSSPPPBPSSPG#GPSSPBPSSPGGGPSSPGGGGGGGBBBPSSPGGGPSSPBBGPSSPGBBPSSPBGBPSSPG#GPSSPBPSSPGGGPSSPGGGGGGGBBBPSSPGGGPSSPBBGPSSPGBBPSSPBGBPSSPG#GPSSPGPSSPPPPPZZPPPPPPPPPPPPSSPPPPPSSPPPPPSSPPPPPSSPPGGPSSPG#GPSSPGPSSSSSSZSSZSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSPGBPSSPG#GPSSPGPSSSSSSZSSZSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSPGBPSSPG#GPSSPGPPSSPPPPZZPPPPSSPPPPZZPPPPSSPPPPPPPPPPSSPPPPZZPGBPSSPG#GPSSPGGPSSPBBPSSPBBPSSPGBPSSPBGPSSPGGGGGGGGPSSPGGPSSPGBPSSPG#GPSSPGGPSSPBBPSSPBBPSSPBBPSSPBGPSSPGGGGGGGGPSSPGGPSSPGBPSSPG#GPSSPGGPSSPPPPSSPPPPZZPPPPSSPPPPZZPPPPPPPPPPZZPPPPSSPGGPSSPG#GPSSPGGPSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSPPPGGPSSPG#GPSSPGGPSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSPGGGGPSSPG#GPSSPGGPPPPPPPPPPPPPPPPPPPPPPSSPPPPPPPPPPPPPPPPPPPPGGGGPSSPG#GPSSPGGGGGGGGGGGGGBBBBGGBBBBPSSPBBBBGGBBBBGGGGGGGGGGGGGPSSPG#PPSSPPPPPPPPPPPPPPPPPPPPPPPPPSSPPPPPPPPPPPPPPPPPPPPPPPPPSSPP#SSSSZSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSZSSSS#SSSSZSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSZSSSS#PPSSPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPSSPP#GPSSPGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGPSSPG";
+const ASZFALT = "S", ZEBRA = "Z", JÁRDA = "P",FŰ = "G", ÉPÜLET = "B", FA = "T", SÍN="R", VASUTZEBRA="C", VASUTAUTO="X";
+const mapstr = "GPSSPRGGGGGTTTGGGGGGTTTGTTGGGGGGTTTGTGGGGGGGTTGGGGGGGGRPSSPG#PPSSPCPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPCPSSPP#SSSSSXSSSSSSSSSSSSSSSSSSSSSSZSSZSSSSSSSSSSSSSSSSSSSSSSXSSSSS#SSSSSXSSSSSSSSSSSSSSSSSSSSSSZSSZSSSSSSSSSSSSSSSSSSSSSSXSSSSS#PPSSPCPZZPPPPPPPPPPPPPPPPPPPPSSPPPPPPPPPPPPPPPPPPPPZZPCPSSPP#RCXXCRCXXCRRRRRRRRRRRRRRRRRRCXXCRRRRRRRRRRRRRRRRRRCXXCRCXXCR#TPSSPRPSSPPPPPPPPPPPPPPPPPPPPSSPPPPPPPPPPPPPPPPPPPPSSPRPSSPG#TPSSPRPSSSSSSSSZSSZSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSPRPSSPG#GPSSPRPSSSSSSSSZSSZSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSPRPSSPT#TPSSPRPSSPPPPPPPSSPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPSSPRPSSPG#TPSSPRPSSSPPTBBPSSPGTGGGBBBBBGPPPPPPPPGTBBBBBBGBBPSSSPRPSSPG#GPSSPRPSSSSPPTBPSSPTTTPPPPPPPPPSSSSSSPPPBBBBBBGBBPSGSPRPSSPT#GPSSPRPPSSSSPPTPSSPGTGPSSSSSSSSSSSSSSSSPPPGTTPPPPPSGSPRPSSPT#GPSSPRGPPSSSSPPPSSPPBBPSSSSSSSSSSPPSSSSSSPPPGPSSSSSGSPRPSSPG#TPSSPRGGPPSSSSPSSSSPPPPSSPSSPPSSPPPPPSSSSSSPPPSSSSSSSPRPSSPG#TPSSPRGGGPPSSSSSBBSSSSSSSSSSPPSSSSSSPPPSSSSSSZSSPPPPPPRPSSPT#GPSSPRGGGGPPSSSSBBSSSSSSSSSSPPSPPPPSSSPPPSSSSZSSPPSSPGRPSSPT#TPSSPRGGGGGPPPPSSSSPPPPPPPPPPPSPPSSSSSSPPPPPPPSSPPSSPTRPSSPG#GPSSPRGGGGGGGGPPSSPPSSSSSSSSGPSSSSPPSSSSPPGTGPSSSSSSPTRPSSPG#GPSSPRGGGGGBBBGPSSSSSSSSSSSSSPPPPPPPPSSSSPPGPPSSSSSSPTRPSSPG#GPSSPRGGGGGBBBGPSSSSSSPPPPSSSSSSSSSSPPSSSSPPPSSSPPPPPTRPSSPT#GPSSPRGGGGGBBBGPSSPPPPPGGPPSSSSSSSSSSPPSSSSPSSSSPBBBBTRPSSPG#GPSSPRPPPPPPPPPPSSPGGTTTTTPPPPPPPPSSSSPPSSSSSSSPPBBBBBRPSSPG#GPSSPRPSSSSSSSSSSSPGGTGGGTTTTGBBGPPSSSSPPSSSSSPPGGGGGTRPSSPG#TPSSPRPSSSSSSSSSSSPGGTTBGTTTTTBBTGPPSSSSPPPPSSSPPPPPPTRPSSPG#TPSSPRPSSPPPPPPPSSPGGTTGGTTGGTGTTTGPPSSSSSSPSSSSSSSSPGRPSSPT#TPSSPRPSSPBGBBBPSSPGGTTGTTTGGPPPPTGGPPSSSSSPPSSSSSSSPGRPSSPT#TPSSPRPSSPBGBBBPSSPGGGGGGGGGPPSSPPGGGPPPPPPPPPPPPPZZPPRPSSPG#GPZZPCPZZPPPPPPPSSPPPPPPPPPPPSSSSPPPPPPPPPPPPPPPPSSSSPCPZZPG#GPSSSXSSSSSSSSSSSSSSSSSSSSSSSSBBSSSSSSSSSSSSSSSSSSBBSSXSSSPT#GPSSSXSSSSSSSSSSSSSSSSSSSSSSSSBBSSSSSSSSSSSSSSSSSSBBSSXSSSPT#GPZZPCPPPPPPPPPPPPPPSSPPPPPPPSSSSPPPPPPPSSPPPPPPPSSSSPCPZZPG#GPSSPRPSSSSPPBBBBPPSSSPGGPPPPPSSPPPPPGGPSSSPPGBBPPSSPPRPSSPT#TPSSPRPSSSSSPBBBBPSSSSPBBPSSSSSSSSSSPGGPSSSSPGBBGPSSPTRPSSPT#TPSSPRPPPSSSPGGGGPSSSPPGGPSSSSSSSSSSPGTPPSSSPTGTGPSSPTRPSSPG#TPSSPRTTPPSSPGTTGPSSPPTTGPSSPPPPPPSSPGTGPPSSPGTTGPSSPTRPSSPG#GPSSPRGBBPSSPGTTTPSSPGTTBPSSPGGGTPSSPGTTGPSSPGTTTPSSPGRPSSPG#GPSSPRGBBPSSPGTTTPSSPGBBBPSSPGGTTPSSPGGGGPSSPGGTTPSSPGRPSSPG#TPSSPRPPPPSSPPPPPPZZPPPPPPZZPPPPPPSSPPPPPPZZPPPPPPZZPPRPSSPG#TPSSPRPSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSZSSZSSSSSSSSPRPSSPG#GPSSPRPSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSZSSZSSSSSSSSPRPSSPG#GPSSPRPSSPPPPPSSPPPPPPPPPPPPZZPPPPPZZPPPPPSSPPPPPSSPPPRPSSPG#GPSSPRPSSPTTGPSSPGGGTTTGBBBPSSPGTTPSSPBBGPSSPGBBPSSPBGRPSSPT#GPSSPRPSSPGGGPSSPGGGGTTGBBBPSSPGTGPSSPBBTPSSPTBBPSSPBTRPSSPT#GPSSPRPSSPPPPPZZPPPPPPPPPPPPSSPPPPPSSPPPPPSSPPPPPSSPPGRPSSPG#GPSSPRPSSSSSSZSSZSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSPGRPSSPG#GPSSPRPSSSSSSZSSZSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSPTRPSSPT#TPSSPRPPSSPPPPZZPPPPSSPPPPZZPPPPSSPPPPPPPPPPSSPPPPZZPTRPSSPG#TPSSPRGPSSPBBPSSPBBPSSPGBPSSPBGPSSPGTTTGGGGPSSPGTPSSPGRPSSPT#TPSSPRGPSSPBBPSSPBBPSSPBBPSSPBGPSSPTTTTGTTGPSSPGGPSSPGRPSSPG#GPSSPRGPSSPPPPSSPPPPZZPPPPSSPPPPZZPPPPPPPPPPZZPPPPSSPTRPSSPT#GPSSPRTPSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSPPPGRPSSPG#GPSSPRTPSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSPGGTRPSSPG#GPSSPRTPPPPPPPPPPPPPPPPPPPPPPSSPPPPPPPPPPPPPPPPPPPPGTTRPSSPG#RCXXCRRRRRRRRRRRRRRRRRRRRRRRCXXCRRRRRRRRRRRRRRRRRRRRRRRCXXCR#PPSSPCPPPPPPPPPPPPPPPPPPPPPPPSSPPPPPPPPPPPPPPPPPPPPPPPCPSSPP#SSSSZXSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSXZSSSS#SSSSZXSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSXZSSSS#PPSSPCPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPCPSSPP#GPSSPRGGGGTTGGGTGGGGGGTTGGGGGGGGGGGTTGGGGGTGGTTGGGTTGGRPSSPG";
 function pollThickFromServer(){
     let repeatAfterDelay = function(){        
         if(!POLL){
@@ -31,13 +35,51 @@ function pollThickFromServer(){
                 stopGame();
                 return;
             }
-            console.log("---------LÉPÉS "+data.thick.request_id.tick+" -----------");
-            console.log(data.thick.cars[0]);
-            console.log(data.sent);
-            console.log(data.info);
+
+            if(data.thick){
+                GAME.myCarId = data.thick.request_id.car_id;
+                GAME.myCar = data.thick.cars.find(function(c) {return c.id === GAME.myCarId});
+            }
+            
+            // console.log("---------LÉPÉS "+data.thick.request_id.tick+" -----------");
+            // console.log(data.thick.cars[0]);
+            // console.log(data.sent);
+            // console.log(data.info);
             repeatAfterDelay();
             drawMap(data.thick,data.sent.command,data.info.route);
             window.steps.push(data);
+
+            /**
+             * Test car collision logic
+             */
+            // if (GAME.myCar && data.thick){
+            //     var danger = CollisionDetector.isDanger(GAME.myCar, data.thick);
+            //     if(danger){
+            //         console.error("Danger:\n");
+            //         console.error(danger);
+            //     }
+            // }
+            // if(GAME.myCar && data.thick){
+            //     if(!GAME.lastLife){
+            //         GAME.lastLife = GAME.myCar.life;
+            //         if(!GAME.lastTickData){
+            //             GAME.lastTickData = data.thick;
+            //         }
+            //     }else if(GAME.myCar.life != GAME.lastLife){
+            //         GAME.lastLife = GAME.myCar.life;
+            //         var dangerl = CollisionDetector.isDanger(GAME.myCarId, GAME.lastTickData)
+            //         var danger = CollisionDetector.isDanger(GAME.myCarId, data.thick);
+            //         console.error("Life point was lost!\nLast tick: ",
+            //                       GAME.lastTickData,
+            //                       "\nTick:",
+            //                       data.thick,
+            //                       "\nCollisionDetector Result For last tick:",
+            //                       dangerl,
+            //                       "\nCollisionDetector Result For this tick:",
+            //                       danger);
+            //     }
+            // }
+            // GAME.lastTickData = data.thick;
         },
         error: function(data) {            
             console.error("Game finished with error!",data);            
@@ -48,8 +90,7 @@ function pollThickFromServer(){
 }
 
 function stopGame(){
-    POLL = false;
-    window.steps = [];
+    POLL = false;    
     document.getElementById("startorstop").innerHTML = "START";
 }
 
@@ -92,327 +133,6 @@ for(var i = 0; i < mapRows.length; i++){
 }
 
 
-
-function drawMap(thickData,answerCommand,route){
-    GAME.canvasContext.fillStyle = "#ffffff";
-    GAME.canvasContext.fillRect(0,0,GAME.gameMatrix[0].length,GAME.gameMatrix.length);
-    if (thickData){
-        var myCarId = thickData.request_id.car_id;
-        GAME.myCar = thickData.cars.find(function(c) {return c.id === myCarId});
-        document.getElementById("thicknum").innerHTML = thickData.request_id.tick;
-        document.getElementById("step").innerHTML = answerCommand;
-        document.getElementById("transportednum").innerHTML = GAME.myCar.transported;
-        document.getElementById("life").innerHTML = GAME.myCar.life;
-    }
-    // Ha szallitok utast
-    if(GAME.myCar && GAME.myCar.passenger_id && thickData.passengers){
-        GAME.myPassenger = thickData.passengers.find(function(o){ return o.id == GAME.myCar.passenger_id });
-    }else{
-        GAME.myPassenger = undefined;
-    }
-    for(var rowIdx = 0; rowIdx < GAME.gameMatrix.length; rowIdx++){
-        for(var colIdx = 0; colIdx < GAME.gameMatrix[rowIdx].length; colIdx++){
-            GAME.canvasContext.fillStyle = getColorByField(GAME.gameMatrix[rowIdx][colIdx]);
-            GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
-            if(GAME.myCar){
-                if (isSeen({x: colIdx, y: rowIdx}, GAME.myCar)) {
-                    GAME.canvasContext.fillStyle = "#FF000088";
-                    GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
-                }
-                
-                // Draw an arrow
-                GAME.canvasContext.fillStyle = "#FFFF00";
-                fromx = GAME.myCar.pos.x*GAME.mapRatio;
-                fromy = GAME.myCar.pos.y*GAME.mapRatio;
-                tox = GAME.mapRatio*normals[GAME.myCar.direction].x + fromx;
-                toy = GAME.mapRatio*normals[GAME.myCar.direction].y + fromy;
-                canvas_arrow(GAME.canvasContext, fromx + 0.5*GAME.mapRatio, fromy + 0.5*GAME.mapRatio, tox + 0.5*GAME.mapRatio, toy + 0.5*GAME.mapRatio, 5);
-
-                // Draw passenger destinations
-                if(GAME.myPassenger){
-                    GAME.canvasContext.fillStyle = "#0000FF";
-                    GAME.canvasContext.fillRect(GAME.myPassenger.dest_pos.x*GAME.mapRatio,
-                        GAME.myPassenger.dest_pos.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
-                }
-            }
-        }
-    }
-    if(thickData){
-        thickData.pedestrians.forEach(pedestrian => {
-            GAME.canvasContext.fillStyle = "#FFFF00";
-            GAME.canvasContext.fillRect(pedestrian.pos.x*GAME.mapRatio,pedestrian.pos.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
-        });
-        thickData.passengers.forEach(passanger => {
-            GAME.canvasContext.fillStyle = "#FFA000";
-            GAME.canvasContext.fillRect(passanger.pos.x*GAME.mapRatio,passanger.pos.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
-        });
-        thickData.cars.forEach(car => {
-            GAME.canvasContext.fillStyle = "#2196F388";
-            GAME.canvasContext.fillRect(car.pos.x*GAME.mapRatio,car.pos.y*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
-        });
-    }
-	if(route){
-        for(var i = 0; i < route.length-1; i++){
-            var moveby = (GAME.mapRatio/2);
-            GAME.canvasContext.beginPath();
-            GAME.canvasContext.moveTo(route[i].x*GAME.mapRatio+moveby, route[i].y*GAME.mapRatio+moveby);
-            GAME.canvasContext.lineTo(route[i+1].x*GAME.mapRatio+moveby, route[i+1].y*GAME.mapRatio+moveby);
-            GAME.canvasContext.lineWidth = 3;
-            // set line color
-            GAME.canvasContext.strokeStyle = '#FDD55C';
-            GAME.canvasContext.stroke();
-        }
-    }
-    
-}
-
-function getColorByField(field){
-    switch(field){
-        case ASZFALT:
-            return "#868686";
-        case ZEBRA:
-            return "#FFFFFF";
-        case JÁRDA:
-            return "#cfcfcf";
-        case FŰ:
-            return "#8fbf60";
-        case ÉPÜLET:
-            return "#b65265";
-        case FA:
-            return "#1c6718";
-    }
-}
-
-function mapSizeChanged(value){
-    GAME.mapRatio = value;
-    var canvas = document.getElementById("canvas"); 
-    canvas.width = GAME.gameMatrix[0].length*GAME.mapRatio;
-    canvas.height = GAME.gameMatrix.length*GAME.mapRatio;
-    canvas.addEventListener("click",function(event){        
-            var rect = canvas.getBoundingClientRect();
-            var x = event.clientX - rect.left;
-            var y = event.clientY - rect.top;
-            alert("x: " + Math.floor(x/GAME.mapRatio) + " y: " + Math.floor(y/GAME.mapRatio));        
-    })
-    GAME.canvasContext = canvas.getContext("2d");
-    drawMap();
-}
-
-
-
-function findAllLinearStreets(from, across){
-    if(!isAszfalt(from)){
-        return;
-    } 
-    if(!across){
-        //first find
-        findAllLinearStreets(from,{i:from.i+1,j:from.j});
-        findAllLinearStreets(from,{i:from.i-1,j:from.j});
-        findAllLinearStreets(from,{i:from.i,j:from.j+1});
-        findAllLinearStreets(from,{i:from.i,j:from.j-1});
-        return;
-    }
-    if(across.i < 0 || across.j < 0 || across.i >= GAME.width || across.j >= GAME.height){
-        //Not in map
-        return;
-    }
-    if(isAszfalt(across)){
-        var distance = Math.abs(from.i-across.i) + Math.abs(from.j-across.j);
-        GAME.graph.addLink(from.i+":"+from.j,across.i+":"+across.j,{weight:calcWeight(from,across,distance)});
-        findAllLinearStreets(from,{
-            i:across.i + (across.i-from.i)/distance,
-            j:across.j + (across.j-from.j)/distance
-        });
-    }
-}
-
-function isAszfalt(point){
-    return GAME.gameMatrix[point.i][point.j] == ASZFALT || GAME.gameMatrix[point.i][point.j] == ZEBRA
-}
-
-function calcWeight(from,dest,distance){
-    if(distance > 5){
-        return 5 + Math.floor((distance-5) / 3)
-    }else{
-        return distance;
-    }
-}
-
-/**
- * Area seen by the car 
- */
-var viewArea = [
-    "         ",
-    "   XXX   ",
-    "   XXX   ",
-    "   XXX   ",
-    "   XXX   ",
-    "  XXXXX  ",
-    " XXXXXXX ",
-    " XXXXXXX ",
-    " XXXCXXX ",
-    "  XXXXX  ",
-    "   XXX   ",
-    "    X    ",
-    "         "
-];
-
-const viewAreaCoords = (function() {
-    var carCoords = []
-    var seenCoords = []
-    for (var y=0; y < viewArea.length; ++y){
-        var line = viewArea[y];
-        for(var x=0; x < line.length; ++x){
-            if (viewArea[y][x] == 'C'){
-                carCoords = {x: x, y:y}
-            }
-            if (viewArea[y][x] ==  'X'){
-                seenCoords.push({x: x, y: y})
-            }
-        }
-    }
-    var relativeSeenCoords = []
-    for(var k in seenCoords){
-        relativeSeenCoords.push({x: seenCoords[k].x-carCoords.x, y: seenCoords[k].y-carCoords.y})
-    }
-    return relativeSeenCoords;
-})();
-
-function rmatrix(phi){
-    return [[Math.cos(phi), -Math.sin(phi)], [Math.sin(phi), Math.cos(phi)]]
-}
-
-function dot(mat22, vec2){
-    return {x: Math.round(mat22[0][0]*vec2.x + mat22[0][1]*vec2.y), y: Math.round(mat22[1][0]*vec2.x + mat22[1][1]*vec2.y)}
-}
-
-function transformedSeenCoords(dir) {
-    if (dir === '^'){
-        return viewAreaCoords;
-    } else if (dir === 'v') {
-        var rotated = [];
-        var R = rmatrix(Math.PI);
-        for(var k in viewAreaCoords){
-            rotated.push(dot(R, viewAreaCoords[k]));
-        }
-        return rotated;
-    } else if (dir === '<'){
-        var rotated = [];
-        var R = rmatrix(-Math.PI/2.0);
-        for(var k in viewAreaCoords){
-            rotated.push(dot(R, viewAreaCoords[k]));
-        }
-        return rotated;
-    } else if (dir === '>'){
-        var rotated = [];
-        var R = rmatrix(Math.PI/2.0);
-        for(var k in viewAreaCoords){
-            rotated.push(dot(R, viewAreaCoords[k]));
-        }
-        return rotated;
-    } else {
-        throw Error("Invalid car direction: "+dir);
-    }
-};
-
-function mapCoordsSeenByCar(car) {
-    var seenRel = transformedSeenCoords(car.direction);
-    var rv = [];
-    seenRel.forEach(c => {
-        rv.push({x: c.x + car.pos.x, y: c.y + car.pos.y});
-    });
-    return rv;
-}
-
-function isSeen(point, car){
-    var pointsSeen = mapCoordsSeenByCar(car);
-    for(let p of pointsSeen){
-        if(p.x === point.x && p.y === point.y) {
-            return true;
-        }
-    }
-    return false;
-}
-
-var normals = {
-    '^': {x: 0, y: -1},
-    '>': {x: 1, y: 0},
-    '<': {x: -1, y: 0},
-    'v': {x: 0, y: 1}
-};
-function canvas_arrow(context, fromx, fromy, tox, toy, r){
-    var x_center = tox;
-    var y_center = toy;
-
-    var angle;
-    var x;
-    var y;
-
-    context.beginPath();
-
-    angle = Math.atan2(toy-fromy,tox-fromx)
-    x = r*Math.cos(angle) + x_center;
-    y = r*Math.sin(angle) + y_center;
-
-    context.moveTo(x, y);
-
-    angle += (1/3)*(2*Math.PI)
-    x = r*Math.cos(angle) + x_center;
-    y = r*Math.sin(angle) + y_center;
-
-    context.lineTo(x, y);
-
-    angle += (1/3)*(2*Math.PI)
-    x = r*Math.cos(angle) + x_center;
-    y = r*Math.sin(angle) + y_center;
-
-    context.lineTo(x, y);
-
-    context.closePath();
-
-    context.fill();
-}
-
-function simulateCarPos(carCoords, carDir, GAME){
-    
-    for(var rowIdx = 0; rowIdx < GAME.gameMatrix.length; rowIdx++){
-        for(var colIdx = 0; colIdx < GAME.gameMatrix[rowIdx].length; colIdx++){
-            if (isSeen({x: colIdx, y: rowIdx}, {pos: carCoords, direction: carDir})){
-                GAME.canvasContext.fillStyle = "#FF0000AA";
-                GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
-            }
-            if (colIdx === carCoords.x && rowIdx === carCoords.y){
-                GAME.canvasContext.fillStyle = "#0000FF99";
-                GAME.canvasContext.fillRect(colIdx*GAME.mapRatio,rowIdx*GAME.mapRatio,GAME.mapRatio,GAME.mapRatio);
-                
-                // Draw an arrow
-                GAME.canvasContext.fillStyle = "#FFFF00";
-                fromx = colIdx*GAME.mapRatio;
-                fromy = rowIdx*GAME.mapRatio;
-                tox = GAME.mapRatio*normals[carDir].x + fromx;
-                toy = GAME.mapRatio*normals[carDir].y + fromy;
-                canvas_arrow(GAME.canvasContext, fromx + 0.5*GAME.mapRatio, fromy + 0.5*GAME.mapRatio, tox + 0.5*GAME.mapRatio, toy + 0.5*GAME.mapRatio, 5);
-            }
-        }
-    }
-}
-
-function canCollide(pedestrian, car){
-    return isSeen(pedestrian.pos, car);
-}
-
-for(var i = 0; i < GAME.gameMatrix.length; i++){
-    for(var j = 0; j < GAME.gameMatrix[i].length; j++){
-        findAllLinearStreets({i:i,j:j});
-    }
-}
-
-GAME.pathFinder = ngraphPath.aStar(GAME.graph, {    
-    distance(fromNode, toNode, link) {
-      return link.data.weight;
-    }
-});
-
 $( document ).ready(function() {
     refreshOldGames();    
     mapSizeChanged(10);
@@ -439,11 +159,16 @@ function refreshOldGames(){
 function createGameDiv(game){
     var container = document.createElement("tr");
     var id = document.createElement("td");
-    id.innerHTML = game[0].thick.request_id.game_id;
+    if(game[0].thick){
+        id.innerHTML = game[0].thick.request_id.game_id;
+    }
+    
     container.appendChild(id);    
     var points = document.createElement("td");
-    var mycar = game[game.length-1].thick.cars.find(function(c) {return c.id === game[0].thick.request_id.car_id});
-    points.innerHTML = mycar.transported;
+    if(game[0].thick){
+        var mycar = game[game.length-1].thick.cars.find(function(c) {return c.id === game[0].thick.request_id.car_id});  
+       points.innerHTML = mycar.transported;
+    }
     container.appendChild(points);
     
     var playtd = document.createElement("td");
@@ -475,6 +200,5 @@ function replayNext(game){
         },document.getElementById("stepdelay").value);
     }else{
         game.running = false;
-    }    
+    }
 }
-
