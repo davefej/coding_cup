@@ -87,7 +87,7 @@ function nextPoint(point,dir,distance){
 isAszfalt = function(point){
     point = normalizePoint(point);
     try{
-        return GAME.gameMatrix[point.i][point.j] == ASZFALT || GAME.gameMatrix[point.i][point.j] == ZEBRA;
+        return GAME.gameMatrix[point.i][point.j] == ASZFALT || GAME.gameMatrix[point.i][point.j] == ZEBRA || GAME.gameMatrix[point.i][point.j] == VASUTAUTO;
     }catch(e){
         //console.warn("Isaszfalt outofbound")
     }
